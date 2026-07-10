@@ -100,32 +100,34 @@ export default function Header() {
       </div>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div style={{ width: '100px' }}>
-          <CustomSelect
-            options={[
-              { value: 'png', label: 'PNG' },
-              { value: 'jpeg', label: 'JPEG' },
-              { value: 'webp', label: 'WEBP' }
-            ]}
-            value={globalSettings.exportFormat}
-            onChange={(val) => setGlobalSettings({ exportFormat: val as any })}
-          />
-        </div>
-        <div style={{ width: '100px' }}>
-          <CustomSelect
-            options={[
-              { value: '1', label: '1x (FHD)' },
-              { value: '2', label: '2x (4K)' },
-              { value: '4', label: '4x (8K)' },
-              { value: '8', label: '8x (16K)' }
-            ]}
-            value={String(globalSettings.exportMultiplier || 2)}
-            onChange={(val) => setGlobalSettings({ exportMultiplier: parseInt(val) })}
-          />
+        <div className={styles.desktopOnly} style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ width: '100px' }}>
+            <CustomSelect
+              options={[
+                { value: 'png', label: 'PNG' },
+                { value: 'jpeg', label: 'JPEG' },
+                { value: 'webp', label: 'WEBP' }
+              ]}
+              value={globalSettings.exportFormat}
+              onChange={(val) => setGlobalSettings({ exportFormat: val as any })}
+            />
+          </div>
+          <div style={{ width: '100px' }}>
+            <CustomSelect
+              options={[
+                { value: '1', label: '1x (FHD)' },
+                { value: '2', label: '2x (4K)' },
+                { value: '4', label: '4x (8K)' },
+                { value: '8', label: '8x (16K)' }
+              ]}
+              value={String(globalSettings.exportMultiplier || 2)}
+              onChange={(val) => setGlobalSettings({ exportMultiplier: parseInt(val) })}
+            />
+          </div>
         </div>
         <button className={styles.exportBtn} onClick={handleExport}>
           <Download size={16} />
-          Export {globalSettings.isCarousel && globalSettings.carouselSlides > 1 ? 'ZIP' : (globalSettings.exportFormat?.toUpperCase() || 'PNG')}
+          <span>Export {globalSettings.isCarousel && globalSettings.carouselSlides > 1 ? 'ZIP' : (globalSettings.exportFormat?.toUpperCase() || 'PNG')}</span>
         </button>
       </div>
     </header>

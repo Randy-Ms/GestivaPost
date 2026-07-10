@@ -6,6 +6,12 @@
   padding: 8px 16px;
   border-bottom: 1px solid var(--border-color);
   overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.presetsBar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .presetBtn {

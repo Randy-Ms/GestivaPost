@@ -4,10 +4,6 @@ import { useEditorStore } from '../../stores/useEditorStore';
 import ContextMenu from './ContextMenu';
 import styles from './Preview.module.css';
 
-interface Guide {
-  axis: 'x' | 'y';
-  position: number;
-}
 
 export default function Preview() {
   const { globalSettings, layers, selectedLayerIds, selectLayer, updateLayer, updateLayers, toggleLayerSelection, setGlobalSettings, isExporting, addLayer, undo, redo, showResetConfirm, setShowResetConfirm, resetDesign, activeTool, setActiveTool, selectedShapeType } = useEditorStore();
@@ -84,9 +80,11 @@ export default function Preview() {
     }
   };
 
-  // Auto fit-to-screen when changing formats or carousel size
+  // Auto fit-to-screen when changing formats or window resize
   useEffect(() => {
     fitToScreen();
+    window.addEventListener('resize', fitToScreen);
+    return () => window.removeEventListener('resize', fitToScreen);
   }, [globalSettings.format, globalSettings.carouselSlides, globalSettings.isCarousel, globalSettings.carouselOrientation]);
 
   const rAFRef = useRef<number | null>(null);

@@ -97,7 +97,7 @@ export const useEditorStore = create<EditorStore>()((set) => {
     showResetConfirm: false,
     activeTool: 'pointer',
     selectedShapeType: 'rectangle',
-    showMockup: true,
+    showMockup: typeof window !== 'undefined' && window.innerWidth > 768,
     clipboard: [],
     
     setIsExporting: (isExporting) => set({ isExporting }),
@@ -255,6 +255,30 @@ export const useEditorStore = create<EditorStore>()((set) => {
       globalSettings: defaultSettings,
       past: [],
       future: []
+    }),
+
+    copySelectedLayers: () => set((state) => {
+      const selectedLayers = state.layers.filter(l => state.selectedLayerIds.includes(l.id));
+      return { clipboard: selectedLayers };
+    }),
+
+    pasteLayers: (offsetX = 20, offsetY = 20) => set((state) => {
+      if (state.clipboard.length === 0) return state;
+      
+      const newLayers = state.clipboard.map(layer => ({
+        ...layer,
+        id: crypto.randomUUID(),
+        x: layer.x + offsetX,
+        y: layer.y + offsetY
+      }));
+
+      const newState = {
+        ...saveHistory(state),
+        layers: [...state.layers, ...newLayers],
+        selectedLayerIds: newLayers.map(l => l.id)
+      };
+      
+      return newState;
     })
   };
 });
