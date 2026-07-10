@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Sun, Moon, X } from 'lucide-react';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Sun, Moon, X, Star, Smile, Zap, Camera, Bell, Search, Mail, Phone, MapPin, Settings, User, Heart as HeartIcon, ThumbsUp, Share2, Home, Globe } from 'lucide-react';
 import { useEditorStore } from '../../stores/useEditorStore';
 import styles from './InstagramMockup.module.css';
 
@@ -181,6 +181,24 @@ export default function InstagramMockup() {
               {layer.text}
             </div>
           );
+        case 'button':
+          return (
+            <div style={{
+              backgroundColor: layer.backgroundColor,
+              color: layer.color,
+              fontSize: `${layer.fontSize}px`,
+              fontFamily: layer.fontFamily,
+              fontWeight: layer.fontWeight,
+              borderRadius: `${layer.borderRadius}px`,
+              padding: layer.padding,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%', height: '100%'
+            }}>
+              {layer.text}
+            </div>
+          );
         case 'image':
           return <img src={layer.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: layer.backgroundRemoved ? 'multiply' : 'normal' }} />;
         case 'shape': {
@@ -188,10 +206,50 @@ export default function InstagramMockup() {
             background: layer.backgroundType === 'gradient' && layer.gradient
               ? `linear-gradient(${layer.gradient.angle || 135}deg, ${layer.gradient.colors?.[0] || '#ff0000'}, ${layer.gradient.colors?.[1] || '#0000ff'})`
               : (layer.backgroundColor || '#000000'),
-            width: '100%', height: '100%', position: 'absolute', borderRadius: `${layer.borderRadius || 0}px`
+            width: '100%', height: '100%', position: 'absolute'
           };
-          if (layer.shapeType === 'circle') shapeStyle.borderRadius = '50%';
+          if (layer.shapeType === 'circle') {
+            shapeStyle.borderRadius = '50%';
+          } else if (layer.shapeType === 'triangle') {
+            shapeStyle.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+          } else if (layer.shapeType === 'polygon' || layer.shapeType === 'hexagon') {
+            shapeStyle.clipPath = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)';
+          } else if (layer.shapeType === 'pentagon') {
+            shapeStyle.clipPath = 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)';
+          } else if (layer.shapeType === 'cloud') {
+            shapeStyle.WebkitMaskImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z'/%3E%3C/svg%3E")`;
+            shapeStyle.WebkitMaskSize = 'contain';
+            shapeStyle.WebkitMaskRepeat = 'no-repeat';
+            shapeStyle.WebkitMaskPosition = 'center';
+          } else if (layer.shapeType === 'heart') {
+            shapeStyle.WebkitMaskImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E")`;
+            shapeStyle.WebkitMaskSize = 'contain';
+            shapeStyle.WebkitMaskRepeat = 'no-repeat';
+            shapeStyle.WebkitMaskPosition = 'center';
+          } else if (layer.shapeType === 'line') {
+            shapeStyle.height = '4px';
+            shapeStyle.top = 'calc(50% - 2px)';
+          } else {
+            shapeStyle.borderRadius = `${layer.borderRadius || 0}px`;
+          }
           return <div style={shapeStyle} />;
+        }
+        case 'icon': {
+          const IconComponent = {
+            'Star': Star, 'Smile': Smile, 'Zap': Zap, 'Camera': Camera, 'Bell': Bell, 
+            'Search': Search, 'Mail': Mail, 'Phone': Phone, 'MapPin': MapPin, 
+            'Settings': Settings, 'User': User, 'Heart': HeartIcon, 'ThumbsUp': ThumbsUp, 
+            'MessageCircle': MessageCircle, 'Share2': Share2, 'Bookmark': Bookmark, 
+            'Home': Home, 'Globe': Globe
+          }[layer.iconName || 'Star'];
+
+          if (!IconComponent) return null;
+
+          return (
+            <div style={{ width: '100%', height: '100%', color: layer.color || '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <IconComponent style={{ width: '100%', height: '100%' }} strokeWidth={1.5} />
+            </div>
+          );
         }
         case 'path':
           return (
