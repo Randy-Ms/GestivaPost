@@ -1,0 +1,237 @@
+.floatingWidget {
+  position: absolute;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  transition: color 0.3s;
+  /* Disable transform transition to allow smooth 60fps dragging */
+}
+
+.floatingWidget.dark {
+  --mockup-bg: #000000;
+  --mockup-text: #ffffff;
+  --mockup-border: #262626;
+  --mockup-frame: #111111;
+}
+
+.floatingWidget.light {
+  --mockup-bg: #ffffff;
+  --mockup-text: #000000;
+  --mockup-border: #dbdbdb;
+  --mockup-frame: #f8f9fa;
+}
+
+.mockupContentWrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+/* SIDE CONTROLS */
+.sideControls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 60px; /* Align near the top of the phone */
+}
+
+.closeBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.closeBtn:hover {
+  background-color: #ff3b30;
+  color: white;
+  border-color: #ff3b30;
+  transform: translateY(-2px);
+}
+
+.themeToggleContainer {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-panel);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.themeBtn {
+  width: 44px;
+  height: 44px;
+  background-color: transparent;
+  border: none;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.themeBtn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.themeBtn.activeDark {
+  background-color: #ff653f;
+  color: #ffffff;
+}
+
+.themeBtn.activeLight {
+  background-color: #ffbe59;
+  color: #ffffff;
+}
+
+/* PHONE FRAME */
+.phoneFrame {
+  background-color: var(--mockup-bg);
+  border: 1px solid var(--mockup-border);
+  border-radius: 36px;
+  overflow: hidden;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.4), 0 0 0 12px var(--mockup-frame);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Dynamic Notch */
+.phoneFrame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 28px;
+  background-color: var(--mockup-frame);
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  z-index: 10;
+  transition: background-color 0.3s;
+}
+
+/* NEW DRAG HANDLE inside the notch */
+.dragPill {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 28px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+}
+
+.dragPill:active {
+  cursor: grabbing;
+}
+
+.pillBar {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: rgba(128, 128, 128, 0.4);
+  transition: background-color 0.2s;
+}
+
+.dragPill:hover .pillBar {
+  background-color: rgba(128, 128, 128, 0.8);
+}
+
+.instagramHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  padding-top: 40px; /* Space for notch */
+  color: var(--mockup-text);
+  border-bottom: 1px solid var(--mockup-border);
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  padding: 2px;
+}
+
+.avatar::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: var(--mockup-bg);
+  border-radius: 50%;
+  border: 2px solid var(--mockup-bg);
+  box-sizing: border-box;
+}
+
+.username {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.postContainer {
+  position: relative;
+  background-color: #e5e5e5;
+}
+
+.postScroller {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  scrollbar-width: none;
+}
+.postScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.instagramFooter {
+  padding: 12px 14px;
+  color: var(--mockup-text);
+}
+
+.actionIcons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.leftIcons {
+  display: flex;
+  gap: 16px;
+}
+
+.likes {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.caption {
+  font-size: 13px;
+  line-height: 1.4;
+}

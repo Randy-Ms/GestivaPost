@@ -1,0 +1,28 @@
+.appContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+.workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.previewPanel {
+  flex: 1;
+  display: flex;
+  position: relative;
+}
+
+.inspectorPanel {
+  width: 320px;
+  min-width: 320px;
+  background-color: var(--bg-panel);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
