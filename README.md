@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
@@ -31,6 +32,10 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+=======
+# GestivaPost
+SaaS Ágil para la creación de Post para RRSS.
+>>>>>>> accf7fe3fdf812b00489f4cd68a20b899ca5bf2b
 =======
 # GestivaPost
 SaaS Ágil para la creación de Post para RRSS.
