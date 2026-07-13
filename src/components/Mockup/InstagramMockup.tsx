@@ -235,13 +235,14 @@ export default function InstagramMockup() {
           return <div style={shapeStyle} />;
         }
         case 'icon': {
-          const IconComponent = {
+          const iconsMap: Record<string, any> = {
             'Star': Star, 'Smile': Smile, 'Zap': Zap, 'Camera': Camera, 'Bell': Bell, 
             'Search': Search, 'Mail': Mail, 'Phone': Phone, 'MapPin': MapPin, 
             'Settings': Settings, 'User': User, 'Heart': HeartIcon, 'ThumbsUp': ThumbsUp, 
             'MessageCircle': MessageCircle, 'Share2': Share2, 'Bookmark': Bookmark, 
             'Home': Home, 'Globe': Globe
-          }[layer.iconName || 'Star'];
+          };
+          const IconComponent = iconsMap[layer.iconName || 'Star'];
 
           if (!IconComponent) return null;
 
