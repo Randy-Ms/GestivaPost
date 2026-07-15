@@ -129,8 +129,10 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
   // Calculate chart dimensions
   const hasHeader = !!(title || subtitle);
   const headerHeight = hasHeader ? (title && subtitle ? 45 : 25) : 0;
-  const chartWidth = Math.max(100, (layer.width || 500) - 40); // 40px padding
-  const chartHeight = Math.max(100, (layer.height || 350) - 40 - headerHeight - (hasHeader ? 16 : 0));
+  const parsedWidth = typeof layer.width === 'string' ? parseFloat(layer.width) : (layer.width || 500);
+  const parsedHeight = typeof layer.height === 'string' ? parseFloat(layer.height) : (layer.height || 350);
+  const chartWidth = Math.max(100, parsedWidth - 40); // 40px padding
+  const chartHeight = Math.max(100, parsedHeight - 40 - headerHeight - (hasHeader ? 16 : 0));
 
   const renderChart = () => {
     switch (type) {
