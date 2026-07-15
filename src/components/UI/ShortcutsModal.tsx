@@ -31,6 +31,7 @@ export default function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps)
         { desc: 'Puntero', keys: ['Alt', 'V'] },
         { desc: 'Texto', keys: ['Alt', 'T'] },
         { desc: 'Formas', keys: ['Alt', 'O'] },
+        { desc: 'Lápiz', keys: ['Alt', 'L'] },
         { desc: 'Pluma', keys: ['Alt', 'P'] },
         { desc: 'Imágenes', keys: ['Alt', 'I'] },
       ]

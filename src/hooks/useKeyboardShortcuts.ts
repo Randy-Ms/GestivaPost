@@ -23,7 +23,8 @@ export function useKeyboardShortcuts() {
         if (key === 'v') { e.preventDefault(); setActiveTool('pointer'); return; }
         if (key === 't') { e.preventDefault(); setActiveTool('text'); return; }
         if (key === 'o') { e.preventDefault(); setActiveTool('shape'); return; }
-        if (key === 'p') { e.preventDefault(); setActiveTool('pen_freehand'); return; }
+        if (key === 'l') { e.preventDefault(); setActiveTool('pen_freehand'); return; }
+        if (key === 'p') { e.preventDefault(); setActiveTool('pen_bezier'); return; }
         if (key === 'i') { e.preventDefault(); setActiveTool('image'); return; }
       }
 

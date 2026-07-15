@@ -371,7 +371,8 @@ export default function Preview() {
         const layer = layers.find(l => l.id === currentPathId);
         if (layer && layer.nodes) {
           const newNodes = [...layer.nodes];
-          const lastNode = newNodes[newNodes.length - 1];
+          const lastNodeIndex = newNodes.length - 1;
+          const lastNode = { ...newNodes[lastNodeIndex] };
           
           if (penState === 'clicking' || penState === 'dragging') {
              if (penState === 'clicking') setPenState('dragging');
@@ -381,6 +382,7 @@ export default function Preview() {
                y: lastNode.y - (layerY - lastNode.y)
              };
           }
+          newNodes[lastNodeIndex] = lastNode;
           
           if (penState !== 'idle') {
             updateLayer(currentPathId, {
