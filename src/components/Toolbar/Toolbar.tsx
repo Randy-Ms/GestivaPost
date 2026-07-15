@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import { 
   MousePointer2, 
   Type, 
@@ -16,14 +16,11 @@ import {
 } from 'lucide-react';
 import { useEditorStore } from '../../stores/useEditorStore';
 import type { ShapeType } from '../../types';
-import LibraryModal from '../UI/LibraryModal';
-import DashboardCreatorModal from '../UI/DashboardCreatorModal';
+
 import styles from './Toolbar.module.css';
 
 export default function Toolbar() {
-  const { activeTool, setActiveTool, selectedShapeType, addLayer, showMockup, setShowMockup, setShowDashboardCreator } = useEditorStore();
-  const [showLibrary, setShowLibrary] = useState(false);
-  const [libraryTab, setLibraryTab] = useState<'shapes'|'icons'>('shapes');
+  const { activeTool, setActiveTool, selectedShapeType, addLayer, showMockup, setShowMockup, setShowDashboardCreator, setShowLibrary, setLibraryTab } = useEditorStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleShapeClick = (e: React.MouseEvent) => {
@@ -170,8 +167,6 @@ export default function Toolbar() {
         style={{ display: 'none' }} 
       />
 
-      <LibraryModal isOpen={showLibrary} onClose={() => setShowLibrary(false)} initialTab={libraryTab} />
-      <DashboardCreatorModal />
     </div>
   );
 }

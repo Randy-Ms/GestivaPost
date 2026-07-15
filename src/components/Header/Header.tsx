@@ -1,15 +1,13 @@
 import { Download, Keyboard } from 'lucide-react';
-import { useState } from 'react';
+
 import * as htmlToImage from 'html-to-image';
 import JSZip from 'jszip';
 import { useEditorStore } from '../../stores/useEditorStore';
 import CustomSelect from '../UI/CustomSelect';
-import ShortcutsModal from '../UI/ShortcutsModal';
 import styles from './Header.module.css';
 
 export default function Header() {
-  const { globalSettings, setIsExporting, setGlobalSettings } = useEditorStore();
-  const [showShortcuts, setShowShortcuts] = useState(false);
+  const { globalSettings, setIsExporting, setGlobalSettings, setShowShortcuts } = useEditorStore();
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -144,7 +142,6 @@ export default function Header() {
           <span>Export {globalSettings.isCarousel && globalSettings.carouselSlides > 1 ? 'ZIP' : (globalSettings.exportFormat?.toUpperCase() || 'PNG')}</span>
         </button>
       </div>
-      <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </header>
   );
 }

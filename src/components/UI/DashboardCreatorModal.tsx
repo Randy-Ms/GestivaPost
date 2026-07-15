@@ -394,8 +394,8 @@ export default function DashboardCreatorModal() {
           <div className={styles.rightCol}>
             <div className={styles.previewLabel}>Vista Previa en Vivo</div>
             <div className={styles.previewContainer}>
-              <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: mockLayer.width, height: mockLayer.height, transform: 'scale(0.8)', transformOrigin: 'center' }}>
+              <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <div style={{ width: mockLayer.width, height: mockLayer.height, transform: 'scale(0.8)', transformOrigin: 'center', flexShrink: 0 }}>
                   <ChartRenderer layer={mockLayer} />
                 </div>
               </div>

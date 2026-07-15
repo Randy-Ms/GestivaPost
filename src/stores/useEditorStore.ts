@@ -44,6 +44,9 @@ interface EditorStoreState extends EditorSnapshot {
   selectedShapeType: ShapeType;
   showMockup: boolean;
   showDashboardCreator: boolean;
+  showShortcuts: boolean;
+  showLibrary: boolean;
+  libraryTab: 'shapes' | 'icons';
   clipboard: Layer[];
 }
 
@@ -52,6 +55,9 @@ interface EditorStoreActions {
   setShowResetConfirm: (show: boolean) => void;
   setShowMockup: (show: boolean) => void;
   setShowDashboardCreator: (show: boolean) => void;
+  setShowShortcuts: (show: boolean) => void;
+  setShowLibrary: (show: boolean) => void;
+  setLibraryTab: (tab: 'shapes' | 'icons') => void;
   setActiveTool: (tool: Tool) => void;
   setSelectedShapeType: (shapeType: ShapeType) => void;
   saveSnapshot: () => void;
@@ -102,12 +108,18 @@ export const useEditorStore = create<EditorStore>()((set) => {
     selectedShapeType: 'rectangle',
     showMockup: typeof window !== 'undefined' && window.innerWidth > 768,
     showDashboardCreator: false,
+    showShortcuts: false,
+    showLibrary: false,
+    libraryTab: 'shapes',
     clipboard: [],
     
     setIsExporting: (isExporting) => set({ isExporting }),
     setShowResetConfirm: (showResetConfirm) => set({ showResetConfirm }),
     setShowMockup: (showMockup) => set({ showMockup }),
     setShowDashboardCreator: (showDashboardCreator) => set({ showDashboardCreator }),
+    setShowShortcuts: (showShortcuts) => set({ showShortcuts }),
+    setShowLibrary: (showLibrary) => set({ showLibrary }),
+    setLibraryTab: (libraryTab) => set({ libraryTab }),
     setActiveTool: (activeTool) => set({ activeTool }),
     setSelectedShapeType: (selectedShapeType) => set({ selectedShapeType }),
     

@@ -5,6 +5,9 @@ import Preview from './components/Preview/Preview';
 import Inspector from './components/Inspector/Inspector';
 import Toolbar from './components/Toolbar/Toolbar';
 import InstagramMockup from './components/Mockup/InstagramMockup';
+import DashboardCreatorModal from './components/UI/DashboardCreatorModal';
+import LibraryModal from './components/UI/LibraryModal';
+import ShortcutsModal from './components/UI/ShortcutsModal';
 import styles from './styles/App.module.css';
 
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -14,7 +17,7 @@ import { useEditorStore } from './stores/useEditorStore';
 
 export default function App() {
   useKeyboardShortcuts();
-  const { isExporting } = useEditorStore();
+  const { isExporting, showLibrary, setShowLibrary, libraryTab, showShortcuts, setShowShortcuts } = useEditorStore();
 
   return (
     <div className={styles.appContainer}>
@@ -48,6 +51,11 @@ export default function App() {
           `}</style>
         </div>
       )}
+
+      {/* Root-Level Modals (Highest Z-Index context) */}
+      <DashboardCreatorModal />
+      <LibraryModal isOpen={showLibrary} onClose={() => setShowLibrary(false)} initialTab={libraryTab} />
+      <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   );
 }
