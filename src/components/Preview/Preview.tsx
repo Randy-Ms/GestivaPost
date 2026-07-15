@@ -434,7 +434,7 @@ export default function Preview() {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [isCanvasPanning, panStart, isDragging, dragStart, layerStartPos, scale, totalWidth, globalSettings.height, layers, selectedLayerIds, resizingLayerId, resizeStart, layerStartSize, resizeHandle, updateLayer, updateLayers, marquee, selectLayer, resizingCanvas, canvasResizeHandle, setGlobalSettings, isExporting, pan, isRotating, rotatingLayerId, rotateStart]);
+  }, [isCanvasPanning, panStart, isDragging, dragStart, layerStartPos, scale, totalWidth, globalSettings.height, layers, selectedLayerIds, resizingLayerId, resizeStart, layerStartSize, resizeHandle, updateLayer, updateLayers, marquee, selectLayer, resizingCanvas, canvasResizeHandle, setGlobalSettings, isExporting, pan, isRotating, rotatingLayerId, rotateStart, activeTool, penState, currentPathId, isDrawingPath, currentPathStart]);
 
   const handleWheel = (e: React.WheelEvent) => {
     if (isExporting) return;
