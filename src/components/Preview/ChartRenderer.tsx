@@ -79,6 +79,8 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
   const cardStyle: React.CSSProperties = {
     width: '100%',
     height: '100%',
+    minWidth: '100%',
+    minHeight: '100%',
     backgroundColor: cardBackgroundColor,
     borderRadius: `${layer.borderRadius || 16}px`,
     padding: '20px',
@@ -86,7 +88,8 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
     display: 'flex',
     flexDirection: 'column',
     fontFamily: baseFont,
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    overflow: 'hidden'
   };
 
   const headerStyle: React.CSSProperties = {

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Sun, Moon, X, Star, Smile, Zap, Camera, Bell, Search, Mail, Phone, MapPin, Settings, User, Heart as HeartIcon, ThumbsUp, Share2, Home, Globe } from 'lucide-react';
+import ChartRenderer from '../Preview/ChartRenderer';
 import { useEditorStore } from '../../stores/useEditorStore';
 import styles from './InstagramMockup.module.css';
 
@@ -252,6 +253,8 @@ export default function InstagramMockup() {
             </div>
           );
         }
+        case 'chart':
+          return <ChartRenderer layer={layer} />;
         case 'path':
           return (
              <svg width="100%" height="100%" viewBox={`0 0 ${layer.width || 100} ${layer.height || 100}`} style={{ overflow: 'visible' }}>

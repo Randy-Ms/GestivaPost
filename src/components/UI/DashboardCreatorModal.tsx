@@ -88,7 +88,7 @@ export default function DashboardCreatorModal() {
   if (!showDashboardCreator) return null;
 
   const handleCreate = () => {
-    addLayer(mockLayer);
+    addLayer({ ...mockLayer, id: `chart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` });
     setShowDashboardCreator(false);
   };
 
