@@ -77,10 +77,13 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
 
   // Base styling for Charts (Background card)
   const cardStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     width: '100%',
     height: '100%',
-    minWidth: '100%',
-    minHeight: '100%',
     backgroundColor: cardBackgroundColor,
     borderRadius: `${layer.borderRadius || 16}px`,
     padding: '20px',
@@ -88,8 +91,7 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
     display: 'flex',
     flexDirection: 'column',
     fontFamily: baseFont,
-    boxSizing: 'border-box',
-    overflow: 'hidden'
+    boxSizing: 'border-box'
   };
 
   const headerStyle: React.CSSProperties = {
