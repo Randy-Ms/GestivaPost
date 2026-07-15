@@ -90,7 +90,7 @@ export default function Toolbar() {
       <button 
         className={`${styles.toolButton} ${activeTool === 'pointer' ? styles.active : ''}`}
         onClick={() => { setActiveTool('pointer'); }}
-        title="Pointer (V)"
+        title="Pointer (Alt+V)"
       >
         <MousePointer2 size={20} />
       </button>
@@ -98,7 +98,7 @@ export default function Toolbar() {
       <button 
         className={`${styles.toolButton} ${activeTool === 'text' ? styles.active : ''}`}
         onClick={() => { setActiveTool('text'); }}
-        title="Text (T)"
+        title="Text (Alt+T)"
       >
         <Type size={20} />
       </button>
@@ -107,7 +107,7 @@ export default function Toolbar() {
         <button 
           className={`${styles.toolButton} ${activeTool === 'shape' ? styles.active : ''}`}
           onClick={handleShapeClick}
-          title="Formas e Iconos (O)"
+          title="Formas e Iconos (Alt+O)"
         >
           {getShapeIcon(selectedShapeType)}
         </button>
@@ -124,7 +124,7 @@ export default function Toolbar() {
       <button 
         className={`${styles.toolButton} ${activeTool === 'pen_freehand' ? styles.active : ''}`}
         onClick={() => { setActiveTool('pen_freehand'); }}
-        title="Lápiz (Mano Alzada)"
+        title="Lápiz Mano Alzada (Alt+P)"
       >
         <PenTool size={20} />
       </button>
@@ -140,18 +140,12 @@ export default function Toolbar() {
       <button 
         className={`${styles.toolButton} ${activeTool === 'image' ? styles.active : ''}`}
         onClick={triggerImageUpload}
-        title="Images (I)"
+        title="Images (Alt+I)"
       >
         <ImageIcon size={20} />
       </button>
 
-      <button 
-        className={`${styles.toolButton} ${activeTool === 'image' ? styles.active : ''}`}
-        onClick={() => setShowShortcuts(true)}
-        title="Atajos de teclado (?)"
-      >
-        <Keyboard size={20} />
-      </button>
+
 
       <div className={styles.divider} />
 

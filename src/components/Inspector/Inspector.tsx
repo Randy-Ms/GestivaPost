@@ -350,10 +350,18 @@ export default function Inspector() {
   return (
     <div className={styles.inspectorContainer} style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {selectedLayerIds.length > 0 && <AlignmentControls />}
-        {selectedLayerIds.length > 0 ? renderLayerSpecifics() : renderGlobalSettings()}
-        <hr className={styles.divider} />
-        {renderLayersList()}
+        {selectedLayerIds.length > 0 ? (
+          <>
+            <AlignmentControls />
+            {renderLayerSpecifics()}
+          </>
+        ) : (
+          <>
+            {renderGlobalSettings()}
+            <hr className={styles.divider} />
+            {renderLayersList()}
+          </>
+        )}
       </div>
       <div style={{ textAlign: 'center', padding: '16px', fontSize: '11px', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)' }}>
         GestivaPost © 2026 | Gestiva ©

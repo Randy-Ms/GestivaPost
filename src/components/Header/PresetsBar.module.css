@@ -53,3 +53,15 @@
   background-color: var(--border-color);
   margin: 0 4px;
 }
+
+@media (max-width: 768px) {
+  .presetsBar {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+  .presetBtn {
+    padding: 4px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+}

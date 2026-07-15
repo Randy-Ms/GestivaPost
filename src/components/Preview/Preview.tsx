@@ -303,9 +303,10 @@ export default function Preview() {
       }
 
       // 5. Drawing Path (Freehand)
-      if (isDrawingPath && currentPathId && currentPathStart && containerRef.current) {
-        const layerX = (e.clientX - containerRef.current.getBoundingClientRect().left - pan.x) / scale;
-        const layerY = (e.clientY - containerRef.current.getBoundingClientRect().top - pan.y) / scale;
+      if (isDrawingPath && currentPathId && currentPathStart && cardRef.current) {
+        const cardRect = cardRef.current.getBoundingClientRect();
+        const layerX = (e.clientX - cardRect.left) / scale;
+        const layerY = (e.clientY - cardRect.top) / scale;
         const dx = layerX - currentPathStart.x;
         const dy = layerY - currentPathStart.y;
         
@@ -454,8 +455,9 @@ export default function Preview() {
       setIsCanvasPanning(true);
       setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     } else if (e.button === 0) { // Left click
-      const layerX = (e.clientX - (containerRef.current?.getBoundingClientRect().left || 0) - pan.x) / scale;
-      const layerY = (e.clientY - (containerRef.current?.getBoundingClientRect().top || 0) - pan.y) / scale;
+      const cardRect = cardRef.current?.getBoundingClientRect();
+      const layerX = cardRect ? (e.clientX - cardRect.left) / scale : 0;
+      const layerY = cardRect ? (e.clientY - cardRect.top) / scale : 0;
 
       if (activeTool === 'text') {
         const id = crypto.randomUUID();

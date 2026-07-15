@@ -17,16 +17,13 @@ export function useKeyboardShortcuts() {
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
 
-      // Single-key shortcuts for tools (no modifier keys)
-      if (!cmdOrCtrl && !e.shiftKey && !e.altKey) {
+      // Tool shortcuts (Alt + Key)
+      if (e.altKey && !cmdOrCtrl && !e.shiftKey) {
         const key = e.key.toLowerCase();
         if (key === 'v') { e.preventDefault(); setActiveTool('pointer'); return; }
         if (key === 't') { e.preventDefault(); setActiveTool('text'); return; }
         if (key === 'o') { e.preventDefault(); setActiveTool('shape'); return; }
         if (key === 'p') { e.preventDefault(); setActiveTool('pen_freehand'); return; }
-        // Note: I for Image triggers a hidden file input, so it's trickier to just set activeTool 
-        // without clicking the input. The Toolbar handles 'I' effectively if we focus it, 
-        // but let's just set the tool state for now.
         if (key === 'i') { e.preventDefault(); setActiveTool('image'); return; }
       }
 

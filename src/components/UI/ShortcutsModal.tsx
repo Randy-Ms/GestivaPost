@@ -28,11 +28,11 @@ export default function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps)
     {
       title: 'Herramientas',
       shortcuts: [
-        { desc: 'Puntero', keys: ['V'] },
-        { desc: 'Texto', keys: ['T'] },
-        { desc: 'Formas', keys: ['O'] },
-        { desc: 'Pluma', keys: ['P'] },
-        { desc: 'Imágenes', keys: ['I'] },
+        { desc: 'Puntero', keys: ['Alt', 'V'] },
+        { desc: 'Texto', keys: ['Alt', 'T'] },
+        { desc: 'Formas', keys: ['Alt', 'O'] },
+        { desc: 'Pluma', keys: ['Alt', 'P'] },
+        { desc: 'Imágenes', keys: ['Alt', 'I'] },
       ]
     },
     {
