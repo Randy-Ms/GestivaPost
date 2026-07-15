@@ -4,7 +4,6 @@ import {
   LineChart, Line,
   BarChart, Bar,
   PieChart as RePieChart, Pie, Cell,
-  ResponsiveContainer,
   XAxis, YAxis, Tooltip, CartesianGrid, Legend
 } from 'recharts';
 import type { Layer } from '../../types';
@@ -86,7 +85,8 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
     boxShadow: layer.showShadow ? '0 10px 25px -5px rgba(0, 0, 0, 0.1)' : 'none',
     display: 'flex',
     flexDirection: 'column',
-    fontFamily: baseFont
+    fontFamily: baseFont,
+    boxSizing: 'border-box'
   };
 
   const headerStyle: React.CSSProperties = {
@@ -121,12 +121,17 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
   };
   const legendProps = getLegendProps();
 
+  // Calculate chart dimensions
+  const hasHeader = !!(title || subtitle);
+  const headerHeight = hasHeader ? (title && subtitle ? 45 : 25) : 0;
+  const chartWidth = Math.max(100, (layer.width || 500) - 40); // 40px padding
+  const chartHeight = Math.max(100, (layer.height || 350) - 40 - headerHeight - (hasHeader ? 16 : 0));
+
   const renderChart = () => {
     switch (type) {
       case 'area':
         return (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart width={chartWidth} height={chartHeight} data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={color} stopOpacity={0.8}/>
@@ -146,13 +151,11 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
                 <Area type="monotone" dataKey="secondary" name="Secundario" stroke={textColor} strokeOpacity={0.5} strokeWidth={3} fillOpacity={0.1} fill={textColor} />
               )}
             </AreaChart>
-          </ResponsiveContainer>
         );
 
       case 'line':
         return (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <LineChart width={chartWidth} height={chartHeight} data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={textColor} strokeOpacity={0.2} />}
               {showAxes && <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} dy={10} />}
               {showAxes && <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} />}
@@ -166,13 +169,11 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
                 <Line type="monotone" dataKey="secondary" name="Secundario" stroke={textColor} strokeOpacity={0.5} strokeWidth={3} dot={{ r: 4, fill: textColor, strokeWidth: 2, stroke: cardBackgroundColor }} />
               )}
             </LineChart>
-          </ResponsiveContainer>
         );
 
       case 'bar':
         return (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={32}>
+            <BarChart width={chartWidth} height={chartHeight} data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={32}>
               {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={textColor} strokeOpacity={0.2} />}
               {showAxes && <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} dy={10} />}
               {showAxes && <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} />}
@@ -187,14 +188,12 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
                 <Bar dataKey="secondary" name="Secundario" fill={textColor} fillOpacity={0.4} radius={[6, 6, 6, 6]} />
               )}
             </BarChart>
-          </ResponsiveContainer>
         );
 
       case 'pie':
         const COLORS = [color, gradient[0], gradient[1], textColor];
         return (
-          <ResponsiveContainer width="100%" height="100%">
-            <RePieChart>
+            <RePieChart width={chartWidth} height={chartHeight}>
               <Pie
                 data={data}
                 cx="50%"
@@ -216,7 +215,6 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
               />
               {showLegend && <Legend {...legendProps} wrapperStyle={{ color: textColor, fontSize: 12, paddingTop: legendPosition === 'bottom' ? 10 : 0, paddingBottom: legendPosition === 'top' ? 10 : 0, paddingLeft: legendPosition === 'right' ? 10 : 0, paddingRight: legendPosition === 'left' ? 10 : 0 }} />}
             </RePieChart>
-          </ResponsiveContainer>
         );
 
       default:
@@ -232,8 +230,10 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
           {subtitle && <p style={subtitleStyle}>{subtitle}</p>}
         </div>
       )}
-      <div style={{ flex: 1, minHeight: 0 }}>
-        {renderChart()}
+      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          {renderChart()}
+        </div>
       </div>
     </div>
   );
