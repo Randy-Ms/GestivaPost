@@ -59,6 +59,15 @@ export default function Preview() {
   // Bezier Engine FSM State
   const [penState, setPenState] = useState<'idle' | 'clicking' | 'dragging'>('idle');
   const [cursorPos, setCursorPos] = useState<{x: number, y: number} | null>(null);
+  
+  const freehandPathRef = useRef<string>('M 0 0');
+  
+  useEffect(() => {
+    if (activeTool !== 'pen_bezier' && activeTool !== 'pen_freehand') {
+      setCurrentPathId(null);
+      setPenState('idle');
+    }
+  }, [activeTool]);
 
   const totalWidth = globalSettings.isCarousel ? globalSettings.width * globalSettings.carouselSlides : globalSettings.width;
 
@@ -354,12 +363,11 @@ export default function Preview() {
         const dx = layerX - currentPathStart.x;
         const dy = layerY - currentPathStart.y;
         
-        const layer = layers.find(l => l.id === currentPathId);
-        if (layer) {
-          updateLayer(currentPathId, {
-            pathData: `${layer.pathData} L ${dx} ${dy}`
-          });
-        }
+        freehandPathRef.current = `${freehandPathRef.current} L ${dx} ${dy}`;
+        
+        updateLayer(currentPathId, {
+          pathData: freehandPathRef.current
+        });
       }
 
       // 6. Drawing Path (Bezier)
@@ -367,6 +375,10 @@ export default function Preview() {
         const cardRect = cardRef.current.getBoundingClientRect();
         const layerX = (e.clientX - cardRect.left) / scale;
         const layerY = (e.clientY - cardRect.top) / scale;
+        
+        if (penState === 'idle') {
+          setCursorPos({ x: layerX, y: layerY });
+        }
         
         const layer = layers.find(l => l.id === currentPathId);
         if (layer && layer.nodes) {
@@ -583,6 +595,7 @@ export default function Preview() {
         setActiveTool('pointer');
       } else if (activeTool === 'pen_freehand') {
         const id = crypto.randomUUID();
+        freehandPathRef.current = 'M 0 0';
         addLayer({
           id,
           type: 'path',
