@@ -56,6 +56,13 @@ export default function Preview() {
   const [currentPathId, setCurrentPathId] = useState<string | null>(null);
   const [currentPathStart, setCurrentPathStart] = useState<{x: number, y: number} | null>(null);
   
+  // Sync refs for drawing to avoid React state closure staleness during high-frequency pointer events
+  const drawingStateRef = useRef<{ isDrawing: boolean; pathId: string | null; start: {x: number, y: number} | null }>({
+    isDrawing: false,
+    pathId: null,
+    start: null
+  });
+  
   // Bezier Engine FSM State
   const [penState, setPenState] = useState<'idle' | 'clicking' | 'dragging'>('idle');
   
@@ -381,23 +388,24 @@ export default function Preview() {
       }
 
       // 5. Drawing Path (Freehand)
-      if (isDrawingPath && currentPathId && currentPathStart && cardRef.current && activeTool === 'pen_freehand') {
+      if (drawingStateRef.current.isDrawing && drawingStateRef.current.pathId && drawingStateRef.current.start && cardRef.current && activeTool === 'pen_freehand') {
         const cardRect = cardRef.current.getBoundingClientRect();
         const layerX = (e.clientX - cardRect.left) / scale;
         const layerY = (e.clientY - cardRect.top) / scale;
-        const dx = layerX - currentPathStart.x;
-        const dy = layerY - currentPathStart.y;
+        const dx = layerX - drawingStateRef.current.start.x;
+        const dy = layerY - drawingStateRef.current.start.y;
         
         freehandPathRef.current = `${freehandPathRef.current} L ${dx} ${dy}`;
         
-        const pathNode = layerNodesRef.current[`${currentPathId}-path`];
+        const pathNode = layerNodesRef.current[`${drawingStateRef.current.pathId}-path`];
         if (pathNode) {
            pathNode.setAttribute('d', freehandPathRef.current);
         }
       }
 
       // 6. Drawing Path (Bezier)
-      if (activeTool === 'pen_bezier' && currentPathId && cardRef.current) {
+      if (activeTool === 'pen_bezier' && drawingStateRef.current.pathId && cardRef.current) {
+        const pathId = drawingStateRef.current.pathId;
         const cardRect = cardRef.current.getBoundingClientRect();
         const layerX = (e.clientX - cardRect.left) / scale;
         const layerY = (e.clientY - cardRect.top) / scale;
@@ -410,7 +418,7 @@ export default function Preview() {
           }
         }
         
-        const layer = layers.find(l => l.id === currentPathId);
+        const layer = layers.find(l => l.id === pathId);
         if (layer && layer.nodes) {
           const newNodes = [...layer.nodes];
           const lastNodeIndex = newNodes.length - 1;
@@ -427,12 +435,12 @@ export default function Preview() {
              newNodes[lastNodeIndex] = lastNode;
              
              // Ephemeral UI updates
-             const pathNode = layerNodesRef.current[`${currentPathId}-path`];
+             const pathNode = layerNodesRef.current[`${pathId}-path`];
              if (pathNode) {
                pathNode.setAttribute('d', generatePathData(newNodes));
              }
              
-             const handlesG = layerNodesRef.current[`${currentPathId}-handles-${lastNodeIndex}`];
+             const handlesG = layerNodesRef.current[`${pathId}-handles-${lastNodeIndex}`];
              if (handlesG) {
                handlesG.innerHTML = `
                  <line x1="${lastNode.x}" y1="${lastNode.y}" x2="${lastNode.handleIn.x}" y2="${lastNode.handleIn.y}" stroke="var(--accent-color)" stroke-width="1" opacity="0.5" />
@@ -444,7 +452,7 @@ export default function Preview() {
              }
              
              // Save temporarily for pointerUp
-             dragUpdatesQueueRef.current[currentPathId] = { 
+             dragUpdatesQueueRef.current[pathId] = { 
                nodes: newNodes, 
                pathData: generatePathData(newNodes) 
              };
@@ -476,11 +484,12 @@ export default function Preview() {
       }
 
       if (isCanvasPanning) setIsCanvasPanning(false);
-      if (isDrawingPath && activeTool === 'pen_freehand' && currentPathId) {
-        updateLayer(currentPathId, {
+      if (isDrawingPath && activeTool === 'pen_freehand' && drawingStateRef.current.pathId) {
+        updateLayer(drawingStateRef.current.pathId, {
           pathData: freehandPathRef.current
         });
         setIsDrawingPath(false);
+        drawingStateRef.current = { isDrawing: false, pathId: null, start: null };
       }
       setResizingCanvas(null);
       setSnapLines([]);
@@ -691,8 +700,9 @@ export default function Preview() {
         setIsDrawingPath(true);
         setCurrentPathId(id);
         setCurrentPathStart({ x: layerX, y: layerY });
+        drawingStateRef.current = { isDrawing: true, pathId: id, start: { x: layerX, y: layerY } };
       } else if (activeTool === 'pen_bezier') {
-        if (!currentPathId) {
+        if (!drawingStateRef.current.pathId) {
           const id = crypto.randomUUID();
           addLayer({
             id,
@@ -714,24 +724,26 @@ export default function Preview() {
           setCurrentPathId(id);
           setPenState('clicking');
           selectLayer([id]);
+          drawingStateRef.current = { isDrawing: true, pathId: id, start: { x: layerX, y: layerY } };
         } else {
           // Add node to existing path
-          const layer = layers.find(l => l.id === currentPathId);
+          const layer = layers.find(l => l.id === drawingStateRef.current.pathId);
           if (layer && layer.nodes) {
             // Check if clicking first node to close
             const firstNode = layer.nodes[0];
             const dist = Math.hypot(layerX - firstNode.x, layerY - firstNode.y);
             if (dist < 10) {
               const newNodes = [...layer.nodes];
-              updateLayer(currentPathId, {
+              updateLayer(drawingStateRef.current.pathId, {
                 nodes: newNodes,
                 pathData: generatePathData(newNodes) + ' Z'
               });
               setCurrentPathId(null);
               setPenState('idle');
+              drawingStateRef.current = { isDrawing: false, pathId: null, start: null };
             } else {
               const newNodes = [...layer.nodes, { x: layerX, y: layerY }];
-              updateLayer(currentPathId, {
+              updateLayer(drawingStateRef.current.pathId, {
                 nodes: newNodes,
                 pathData: generatePathData(newNodes)
               });
