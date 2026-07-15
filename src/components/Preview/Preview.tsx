@@ -15,6 +15,7 @@ export default function Preview() {
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  
   const [isCanvasPanning, setIsCanvasPanning] = useState(false);
   const [panStart, setPanStart] = useState<{ x: number, y: number } | null>(null);
   
@@ -54,6 +55,10 @@ export default function Preview() {
   const [isDrawingPath, setIsDrawingPath] = useState(false);
   const [currentPathId, setCurrentPathId] = useState<string | null>(null);
   const [currentPathStart, setCurrentPathStart] = useState<{x: number, y: number} | null>(null);
+  
+  // Bezier Engine FSM State
+  const [penState, setPenState] = useState<'idle' | 'clicking' | 'dragging'>('idle');
+  const [cursorPos, setCursorPos] = useState<{x: number, y: number} | null>(null);
 
   const totalWidth = globalSettings.isCarousel ? globalSettings.width * globalSettings.carouselSlides : globalSettings.width;
 
@@ -89,6 +94,37 @@ export default function Preview() {
 
   const rAFRef = useRef<number | null>(null);
 
+  const generatePathData = (nodes: any[]) => {
+    if (!nodes || nodes.length === 0) return 'M 0 0';
+    let path = `M ${nodes[0].x} ${nodes[0].y}`;
+    for (let i = 1; i < nodes.length; i++) {
+      const prev = nodes[i - 1];
+      const curr = nodes[i];
+      if (prev.handleOut || curr.handleIn) {
+        const h1 = prev.handleOut || { x: prev.x, y: prev.y };
+        const h2 = curr.handleIn || { x: curr.x, y: curr.y };
+        path += ` C ${h1.x} ${h1.y}, ${h2.x} ${h2.y}, ${curr.x} ${curr.y}`;
+      } else {
+        path += ` L ${curr.x} ${curr.y}`;
+      }
+    }
+    return path;
+  };
+
+  useEffect(() => {
+    if (isExporting) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && activeTool === 'pen_bezier') {
+        setCurrentPathId(null);
+        setPenState('idle');
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTool]);
+
   useEffect(() => {
     if (isExporting) return;
 
@@ -96,6 +132,14 @@ export default function Preview() {
       if (rAFRef.current) cancelAnimationFrame(rAFRef.current);
 
       rAFRef.current = requestAnimationFrame(() => {
+      
+      if (cardRef.current) {
+        const cardRect = cardRef.current.getBoundingClientRect();
+        setCursorPos({
+          x: (e.clientX - cardRect.left) / scale,
+          y: (e.clientY - cardRect.top) / scale
+        });
+      }
       // 0. Canvas Panning
       if (isCanvasPanning && panStart) {
         setPan({
@@ -303,7 +347,7 @@ export default function Preview() {
       }
 
       // 5. Drawing Path (Freehand)
-      if (isDrawingPath && currentPathId && currentPathStart && cardRef.current) {
+      if (isDrawingPath && currentPathId && currentPathStart && cardRef.current && activeTool === 'pen_freehand') {
         const cardRect = cardRef.current.getBoundingClientRect();
         const layerX = (e.clientX - cardRect.left) / scale;
         const layerY = (e.clientY - cardRect.top) / scale;
@@ -315,6 +359,35 @@ export default function Preview() {
           updateLayer(currentPathId, {
             pathData: `${layer.pathData} L ${dx} ${dy}`
           });
+        }
+      }
+
+      // 6. Drawing Path (Bezier)
+      if (activeTool === 'pen_bezier' && currentPathId && cardRef.current) {
+        const cardRect = cardRef.current.getBoundingClientRect();
+        const layerX = (e.clientX - cardRect.left) / scale;
+        const layerY = (e.clientY - cardRect.top) / scale;
+        
+        const layer = layers.find(l => l.id === currentPathId);
+        if (layer && layer.nodes) {
+          const newNodes = [...layer.nodes];
+          const lastNode = newNodes[newNodes.length - 1];
+          
+          if (penState === 'clicking' || penState === 'dragging') {
+             if (penState === 'clicking') setPenState('dragging');
+             lastNode.handleOut = { x: layerX, y: layerY };
+             lastNode.handleIn = {
+               x: lastNode.x - (layerX - lastNode.x),
+               y: lastNode.y - (layerY - lastNode.y)
+             };
+          }
+          
+          if (penState !== 'idle') {
+            updateLayer(currentPathId, {
+              nodes: newNodes,
+              pathData: generatePathData(newNodes)
+            });
+          }
         }
       }
       });
@@ -340,10 +413,17 @@ export default function Preview() {
       setCanvasResizeHandle(null);
 
       setIsDrawingPath(false);
-      setCurrentPathId(null);
-      setCurrentPathStart(null);
-
       setMarquee(null);
+
+      if (activeTool === 'pen_bezier') {
+        if (penState === 'clicking' || penState === 'dragging') {
+          setPenState('idle');
+        }
+      } else {
+        setCurrentPathId(null);
+        setCurrentPathStart(null);
+        setPenState('idle');
+      }
     };
 
     window.addEventListener('pointermove', handlePointerMove);
@@ -521,24 +601,53 @@ export default function Preview() {
         setCurrentPathId(id);
         setCurrentPathStart({ x: layerX, y: layerY });
       } else if (activeTool === 'pen_bezier') {
-        const id = crypto.randomUUID();
-        addLayer({
-          id,
-          type: 'path',
-          name: 'Vector',
-          x: Math.round(layerX),
-          y: Math.round(layerY),
-          width: 100,
-          height: 100,
-          pathData: 'M 0 0 L 50 50 L 100 0', // Placeholder shape since we don't have a complex bezier engine yet
-          layerColor: '#000000',
-          strokeWidth: 2,
-          rotation: 0,
-          opacity: 1,
-          locked: false,
-          hidden: false
-        });
-        setActiveTool('pointer');
+        if (!currentPathId) {
+          const id = crypto.randomUUID();
+          addLayer({
+            id,
+            type: 'path',
+            name: 'Vector',
+            x: 0,
+            y: 0,
+            width: totalWidth,
+            height: globalSettings.height,
+            pathData: `M ${layerX} ${layerY}`,
+            nodes: [{ x: layerX, y: layerY }],
+            layerColor: '#000000',
+            strokeWidth: 2,
+            rotation: 0,
+            opacity: 1,
+            locked: false,
+            hidden: false
+          });
+          setCurrentPathId(id);
+          setPenState('clicking');
+          selectLayer([id]);
+        } else {
+          // Add node to existing path
+          const layer = layers.find(l => l.id === currentPathId);
+          if (layer && layer.nodes) {
+            // Check if clicking first node to close
+            const firstNode = layer.nodes[0];
+            const dist = Math.hypot(layerX - firstNode.x, layerY - firstNode.y);
+            if (dist < 10) {
+              const newNodes = [...layer.nodes];
+              updateLayer(currentPathId, {
+                nodes: newNodes,
+                pathData: generatePathData(newNodes) + ' Z'
+              });
+              setCurrentPathId(null);
+              setPenState('idle');
+            } else {
+              const newNodes = [...layer.nodes, { x: layerX, y: layerY }];
+              updateLayer(currentPathId, {
+                nodes: newNodes,
+                pathData: generatePathData(newNodes)
+              });
+              setPenState('clicking');
+            }
+          }
+        }
       } else {
         // Default Pointer Marquee behavior
         selectLayer([]);
@@ -1146,7 +1255,8 @@ export default function Preview() {
             </div>
           );
         }
-        case 'path':
+        case 'path': {
+          const isDrawing = currentPathId === layer.id;
           return (
              <svg width="100%" height="100%" viewBox={`0 0 ${layer.width || 100} ${layer.height || 100}`} style={{ overflow: 'visible', pointerEvents: 'none' }}>
                <path 
@@ -1157,8 +1267,32 @@ export default function Preview() {
                  strokeLinecap="round"
                  strokeLinejoin="round"
                />
+               {isDrawing && layer.nodes && layer.nodes.map((node: any, i: number) => (
+                 <g key={`node-${i}`}>
+                   {node.handleIn && <line x1={node.x} y1={node.y} x2={node.handleIn.x} y2={node.handleIn.y} stroke="var(--accent-color)" strokeWidth="1" opacity="0.5" />}
+                   {node.handleOut && <line x1={node.x} y1={node.y} x2={node.handleOut.x} y2={node.handleOut.y} stroke="var(--accent-color)" strokeWidth="1" opacity="0.5" />}
+                   
+                   {node.handleIn && <circle cx={node.handleIn.x} cy={node.handleIn.y} r="3" fill="var(--bg-panel)" stroke="var(--accent-color)" strokeWidth="1.5" />}
+                   {node.handleOut && <circle cx={node.handleOut.x} cy={node.handleOut.y} r="3" fill="var(--bg-panel)" stroke="var(--accent-color)" strokeWidth="1.5" />}
+                   
+                   <rect x={node.x - 3} y={node.y - 3} width="6" height="6" fill="var(--bg-panel)" stroke="var(--accent-color)" strokeWidth="1.5" />
+                 </g>
+               ))}
+               
+               {isDrawing && penState === 'idle' && layer.nodes && layer.nodes.length > 0 && cursorPos && (
+                 <line 
+                   x1={layer.nodes[layer.nodes.length - 1].x} 
+                   y1={layer.nodes[layer.nodes.length - 1].y} 
+                   x2={cursorPos.x} 
+                   y2={cursorPos.y} 
+                   stroke="var(--accent-color)" 
+                   strokeWidth="1.5" 
+                   strokeDasharray="4 4" 
+                 />
+               )}
              </svg>
           );
+        }
         default: return null;
       }
     };

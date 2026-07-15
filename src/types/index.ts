@@ -21,6 +21,12 @@ export interface AppFilter {
   dotSize?: number;
 }
 
+export interface BezierNode {
+  x: number;
+  y: number;
+  handleIn?: { x: number; y: number };
+  handleOut?: { x: number; y: number };
+}
 
 export interface Layer {
   id: string;
@@ -58,6 +64,7 @@ export interface Layer {
   
   // Vector specific
   pathData?: string;
+  nodes?: BezierNode[];
   strokeWidth?: number;
   
   // Icon specific

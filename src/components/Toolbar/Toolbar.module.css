@@ -1,8 +1,9 @@
 .toolbar {
   position: absolute;
   left: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 20px;
+  bottom: 20px;
+  max-height: calc(100vh - 120px);
   background-color: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -12,6 +13,7 @@
   gap: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   z-index: 100;
+  overflow-y: auto;
 }
 
 .toolButton {
