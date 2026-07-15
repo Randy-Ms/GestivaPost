@@ -994,7 +994,7 @@ export default function Preview() {
       opacity: layer.opacity,
       transform: `rotate(${layer.rotation}deg)`,
       cursor: layer.locked || isExporting ? 'default' : (isDragging && isSelected ? 'grabbing' : 'grab'),
-      border: isSelected ? '1px solid var(--accent-color)' : '1px solid transparent',
+      border: (isSelected && layer.type !== 'path') ? '1px solid var(--accent-color)' : '1px solid transparent',
       boxSizing: 'border-box'
     };
 
@@ -1311,52 +1311,7 @@ export default function Preview() {
     );
   };
 
-  const renderShortcutsMenu = () => {
-    return (
-      <div style={{
-        position: 'absolute',
-        bottom: 16,
-        left: 16,
-        backgroundColor: 'var(--bg-panel)',
-        padding: '12px 16px',
-        borderRadius: '8px',
-        border: '1px solid var(--border-color)',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        zIndex: 1000,
-        userSelect: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px'
-      }}>
-        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          Atajos Rápidos
-        </div>
-        {[
-          { key: '1', label: '1:1 Post' },
-          { key: '2', label: '4:5 Vertical' },
-          { key: '3', label: '1.91:1 Horizontal' },
-          { key: '4', label: '9:16 Story' },
-          { key: '5', label: 'Reel' },
-          { key: '6', label: 'Carousel' },
-          { key: 'T', label: 'Texto' },
-          { key: 'H', label: 'Título' },
-          { key: 'B', label: 'Botón' },
-        ].map(sc => (
-          <div key={sc.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '150px', fontSize: '13px' }}>
-            <span style={{ color: 'var(--text-primary)' }}>{sc.label}</span>
-            <div style={{ 
-              display: 'flex', alignItems: 'center', gap: '2px', 
-              backgroundColor: 'var(--bg-canvas)', padding: '2px 6px', 
-              borderRadius: '4px', border: '1px solid var(--border-color)',
-              fontSize: '11px', color: 'var(--text-secondary)'
-            }}>
-              ⌘ {sc.key}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
+
 
   return (
     <div 
@@ -1390,7 +1345,6 @@ export default function Preview() {
 
       {renderTopLeftControls()}
       {renderTopRightControls()}
-      {renderShortcutsMenu()}
       {renderZoomControls()}
       {renderMarquee()}
       {renderResetConfirmModal()}
