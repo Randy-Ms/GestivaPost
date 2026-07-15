@@ -1,12 +1,15 @@
-import { Download } from 'lucide-react';
+import { Download, Keyboard } from 'lucide-react';
+import { useState } from 'react';
 import * as htmlToImage from 'html-to-image';
 import JSZip from 'jszip';
 import { useEditorStore } from '../../stores/useEditorStore';
 import CustomSelect from '../UI/CustomSelect';
+import ShortcutsModal from '../UI/ShortcutsModal';
 import styles from './Header.module.css';
 
 export default function Header() {
   const { globalSettings, setIsExporting, setGlobalSettings } = useEditorStore();
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -101,6 +104,17 @@ export default function Header() {
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <div className={styles.desktopOnly} style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            onClick={() => setShowShortcuts(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              backgroundColor: 'var(--bg-canvas)', padding: '6px 12px',
+              borderRadius: '6px', border: '1px solid var(--border-color)',
+              cursor: 'pointer', color: 'var(--text-primary)', fontSize: '12px'
+            }}
+          >
+            <Keyboard size={14} /> Atajos
+          </button>
           <div style={{ width: '100px' }}>
             <CustomSelect
               options={[
@@ -130,6 +144,7 @@ export default function Header() {
           <span>Export {globalSettings.isCarousel && globalSettings.carouselSlides > 1 ? 'ZIP' : (globalSettings.exportFormat?.toUpperCase() || 'PNG')}</span>
         </button>
       </div>
+      <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </header>
   );
 }

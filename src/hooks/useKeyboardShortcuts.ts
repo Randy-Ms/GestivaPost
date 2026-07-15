@@ -17,10 +17,11 @@ export function useKeyboardShortcuts() {
       const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
       const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
 
-      // Tool shortcuts (Alt + Key)
-      if (e.altKey && !cmdOrCtrl && !e.shiftKey) {
+      // Tool shortcuts (Ctrl + Key)
+      if (cmdOrCtrl && !e.shiftKey) {
         const key = e.key.toLowerCase();
-        if (key === 'v') { e.preventDefault(); setActiveTool('pointer'); return; }
+        // Prevent conflicts with basic text editing if focused on canvas
+        if (key === 'q') { e.preventDefault(); setActiveTool('pointer'); return; }
         if (key === 't') { e.preventDefault(); setActiveTool('text'); return; }
         if (key === 'o') { e.preventDefault(); setActiveTool('shape'); return; }
         if (key === 'l') { e.preventDefault(); setActiveTool('pen_freehand'); return; }

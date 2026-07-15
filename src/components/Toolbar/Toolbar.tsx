@@ -11,12 +11,10 @@ import {
   Pen,
   Smile,
   Image as ImageIcon,
-  Keyboard,
   Smartphone
 } from 'lucide-react';
 import { useEditorStore } from '../../stores/useEditorStore';
 import type { ShapeType } from '../../types';
-import ShortcutsModal from '../UI/ShortcutsModal';
 import LibraryModal from '../UI/LibraryModal';
 import styles from './Toolbar.module.css';
 
@@ -24,7 +22,6 @@ export default function Toolbar() {
   const { activeTool, setActiveTool, selectedShapeType, addLayer, showMockup, setShowMockup } = useEditorStore();
   const [showLibrary, setShowLibrary] = useState(false);
   const [libraryTab, setLibraryTab] = useState<'shapes'|'icons'>('shapes');
-  const [showShortcuts, setShowShortcuts] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleShapeClick = (e: React.MouseEvent) => {
@@ -43,30 +40,26 @@ export default function Toolbar() {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const src = event.target?.result as string;
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width;
-        let h = img.height;
-        if (w > 600) {
-          h = (600 / w) * h;
-          w = 600;
-        }
-        addLayer({
-          id: crypto.randomUUID(),
-          type: 'image',
-          name: file.name || 'Imagen',
-          src,
-          x: 100, y: 100, width: w, height: h,
-          rotation: 0, opacity: 1, locked: false, hidden: false
-        });
-        setActiveTool('pointer'); // Revert to pointer after upload
-      };
-      img.src = src;
+    const src = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width;
+      let h = img.height;
+      if (w > 600) {
+        h = (600 / w) * h;
+        w = 600;
+      }
+      addLayer({
+        id: crypto.randomUUID(),
+        type: 'image',
+        name: file.name || 'Imagen',
+        src,
+        x: 100, y: 100, width: w, height: h,
+        rotation: 0, opacity: 1, locked: false, hidden: false
+      });
+      setActiveTool('pointer'); // Revert to pointer after upload
     };
-    reader.readAsDataURL(file);
+    img.src = src;
     e.target.value = '';
   };
 
@@ -90,7 +83,7 @@ export default function Toolbar() {
       <button 
         className={`${styles.toolButton} ${activeTool === 'pointer' ? styles.active : ''}`}
         onClick={() => { setActiveTool('pointer'); }}
-        title="Pointer (Alt+V)"
+        title="Pointer (Ctrl+Q)"
       >
         <MousePointer2 size={20} />
       </button>
@@ -98,7 +91,7 @@ export default function Toolbar() {
       <button 
         className={`${styles.toolButton} ${activeTool === 'text' ? styles.active : ''}`}
         onClick={() => { setActiveTool('text'); }}
-        title="Text (Alt+T)"
+        title="Text (Ctrl+T)"
       >
         <Type size={20} />
       </button>
@@ -107,7 +100,7 @@ export default function Toolbar() {
         <button 
           className={`${styles.toolButton} ${activeTool === 'shape' ? styles.active : ''}`}
           onClick={handleShapeClick}
-          title="Formas e Iconos (Alt+O)"
+          title="Formas e Iconos (Ctrl+O)"
         >
           {getShapeIcon(selectedShapeType)}
         </button>
@@ -124,7 +117,7 @@ export default function Toolbar() {
       <button 
         className={`${styles.toolButton} ${activeTool === 'pen_freehand' ? styles.active : ''}`}
         onClick={() => { setActiveTool('pen_freehand'); }}
-        title="Lápiz Mano Alzada (Alt+P)"
+        title="Lápiz Mano Alzada (Ctrl+L)"
       >
         <PenTool size={20} />
       </button>
@@ -132,7 +125,7 @@ export default function Toolbar() {
       <button 
         className={`${styles.toolButton} ${activeTool === 'pen_bezier' ? styles.active : ''}`}
         onClick={() => { setActiveTool('pen_bezier'); }}
-        title="Pluma (Bézier)"
+        title="Pluma Bézier (Ctrl+P)"
       >
         <Pen size={20} />
       </button>
@@ -140,7 +133,7 @@ export default function Toolbar() {
       <button 
         className={`${styles.toolButton} ${activeTool === 'image' ? styles.active : ''}`}
         onClick={triggerImageUpload}
-        title="Images (Alt+I)"
+        title="Images (Ctrl+I)"
       >
         <ImageIcon size={20} />
       </button>
@@ -165,18 +158,7 @@ export default function Toolbar() {
         style={{ display: 'none' }} 
       />
 
-      <div style={{ marginTop: 'auto' }}>
-        <button 
-          className={styles.toolButton} 
-          onClick={() => setShowShortcuts(true)}
-          title="Atajos de Teclado"
-        >
-          <Keyboard size={20} />
-        </button>
-      </div>
-
       <LibraryModal isOpen={showLibrary} onClose={() => setShowLibrary(false)} initialTab={libraryTab} />
-      <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   );
 }

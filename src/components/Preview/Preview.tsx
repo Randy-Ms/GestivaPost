@@ -58,10 +58,10 @@ export default function Preview() {
   
   // Bezier Engine FSM State
   const [penState, setPenState] = useState<'idle' | 'clicking' | 'dragging'>('idle');
-  const [cursorPos, setCursorPos] = useState<{x: number, y: number} | null>(null);
   
   const freehandPathRef = useRef<string>('M 0 0');
-  
+  const layerNodesRef = useRef<Record<string, HTMLElement | null>>({});
+  const dragUpdatesQueueRef = useRef<{ [id: string]: any }>({});
   useEffect(() => {
     if (activeTool !== 'pen_bezier' && activeTool !== 'pen_freehand') {
       setCurrentPathId(null);
@@ -142,13 +142,7 @@ export default function Preview() {
 
       rAFRef.current = requestAnimationFrame(() => {
       
-      if (cardRef.current) {
-        const cardRect = cardRef.current.getBoundingClientRect();
-        setCursorPos({
-          x: (e.clientX - cardRect.left) / scale,
-          y: (e.clientY - cardRect.top) / scale
-        });
-      }
+
       // 0. Canvas Panning
       if (isCanvasPanning && panStart) {
         setPan({
@@ -163,7 +157,6 @@ export default function Preview() {
         const dx = (e.clientX - dragStart.x) / scale;
         const dy = (e.clientY - dragStart.y) / scale;
         
-        const updates: { id: string; updates: any }[] = [];
         const snapLinesLocal: SnapLine[] = [];
         const snapThreshold = 10;
         const canvasCenterX = totalWidth / 2;
@@ -218,12 +211,24 @@ export default function Preview() {
             });
           }
 
-          updates.push({ id, updates: { x: Math.round(newX), y: Math.round(newY) } });
+          const roundedX = Math.round(newX);
+          const roundedY = Math.round(newY);
+          dragUpdatesQueueRef.current[id] = { x: roundedX, y: roundedY };
+          
+          const node = layerNodesRef.current[id];
+          if (node) {
+            node.style.left = `${roundedX}px`;
+            node.style.top = `${roundedY}px`;
+          }
+          
+          const handlesNode = layerNodesRef.current[`${id}-handles`];
+          if (handlesNode) {
+            handlesNode.style.left = `${roundedX}px`;
+            handlesNode.style.top = `${roundedY}px`;
+          }
         });
 
         setSnapLines(snapLinesLocal);
-
-        if (updates.length > 0) updateLayers(updates, true);
       }
 
       // 2. Resizing Layer
@@ -263,22 +268,35 @@ export default function Preview() {
 
         if (layer?.type === 'text') {
           if (resizeHandle.length === 2) {
-            // Corner handles -> Scale font
             const scaleRatio = updates.width / layerStartSize.width;
             updates.fontSize = Math.max(8, Math.round((layerStartSize.fontSize || 32) * scaleRatio));
-            // Keep proportion for height
             updates.height = Math.max(20, Math.round(layerStartSize.height * scaleRatio));
             if (resizeHandle.includes('n')) {
               updates.y = layerStartSize.y + (layerStartSize.height - updates.height);
             }
           } else if (resizeHandle === 'e' || resizeHandle === 'w') {
-            // Edge handles -> Text wrap (keep height & fontSize)
             updates.height = layerStartSize.height;
             updates.y = layerStartSize.y;
           }
         }
 
-        updateLayer(resizingLayerId, updates);
+        dragUpdatesQueueRef.current[resizingLayerId] = updates;
+        const node = layerNodesRef.current[resizingLayerId];
+        if (node) {
+           node.style.width = `${updates.width}px`;
+           node.style.height = `${updates.height}px`;
+           node.style.left = `${updates.x}px`;
+           node.style.top = `${updates.y}px`;
+           if (updates.fontSize) node.style.fontSize = `${updates.fontSize}px`;
+        }
+        
+        const handlesNode = layerNodesRef.current[`${resizingLayerId}-handles`];
+        if (handlesNode) {
+           handlesNode.style.width = `${updates.width}px`;
+           handlesNode.style.height = `${updates.height}px`;
+           handlesNode.style.left = `${updates.x}px`;
+           handlesNode.style.top = `${updates.y}px`;
+        }
         return;
       }
 
@@ -297,10 +315,17 @@ export default function Preview() {
           newRotation = Math.round(newRotation / 45) * 45;
         }
 
-        updateLayer(rotatingLayerId, { rotation: newRotation });
+        dragUpdatesQueueRef.current[rotatingLayerId] = { rotation: newRotation };
+        const node = layerNodesRef.current[rotatingLayerId];
+        if (node) {
+           node.style.transform = `rotate(${newRotation}deg)`;
+        }
+        const handlesNode = layerNodesRef.current[`${rotatingLayerId}-handles`];
+        if (handlesNode) {
+           handlesNode.style.transform = `rotate(${newRotation}deg)`;
+        }
         return;
       }
-
       // 3. Resizing Canvas Symmetrically
       if (resizingCanvas && canvasResizeHandle) {
         const dx = (e.clientX - resizingCanvas.startX) / scale;
@@ -365,9 +390,10 @@ export default function Preview() {
         
         freehandPathRef.current = `${freehandPathRef.current} L ${dx} ${dy}`;
         
-        updateLayer(currentPathId, {
-          pathData: freehandPathRef.current
-        });
+        const pathNode = layerNodesRef.current[`${currentPathId}-path`];
+        if (pathNode) {
+           pathNode.setAttribute('d', freehandPathRef.current);
+        }
       }
 
       // 6. Drawing Path (Bezier)
@@ -377,7 +403,11 @@ export default function Preview() {
         const layerY = (e.clientY - cardRect.top) / scale;
         
         if (penState === 'idle') {
-          setCursorPos({ x: layerX, y: layerY });
+          const previewLine = layerNodesRef.current['bezier-preview-line'];
+          if (previewLine) {
+            previewLine.setAttribute('x2', layerX.toString());
+            previewLine.setAttribute('y2', layerY.toString());
+          }
         }
         
         const layer = layers.find(l => l.id === currentPathId);
@@ -393,14 +423,31 @@ export default function Preview() {
                x: lastNode.x - (layerX - lastNode.x),
                y: lastNode.y - (layerY - lastNode.y)
              };
-          }
-          newNodes[lastNodeIndex] = lastNode;
-          
-          if (penState !== 'idle') {
-            updateLayer(currentPathId, {
-              nodes: newNodes,
-              pathData: generatePathData(newNodes)
-            });
+             
+             newNodes[lastNodeIndex] = lastNode;
+             
+             // Ephemeral UI updates
+             const pathNode = layerNodesRef.current[`${currentPathId}-path`];
+             if (pathNode) {
+               pathNode.setAttribute('d', generatePathData(newNodes));
+             }
+             
+             const handlesG = layerNodesRef.current[`${currentPathId}-handles-${lastNodeIndex}`];
+             if (handlesG) {
+               handlesG.innerHTML = `
+                 <line x1="${lastNode.x}" y1="${lastNode.y}" x2="${lastNode.handleIn.x}" y2="${lastNode.handleIn.y}" stroke="var(--accent-color)" stroke-width="1" opacity="0.5" />
+                 <line x1="${lastNode.x}" y1="${lastNode.y}" x2="${lastNode.handleOut.x}" y2="${lastNode.handleOut.y}" stroke="var(--accent-color)" stroke-width="1" opacity="0.5" />
+                 <circle cx="${lastNode.handleIn.x}" cy="${lastNode.handleIn.y}" r="3" fill="var(--bg-panel)" stroke="var(--accent-color)" stroke-width="1.5" />
+                 <circle cx="${lastNode.handleOut.x}" cy="${lastNode.handleOut.y}" r="3" fill="var(--bg-panel)" stroke="var(--accent-color)" stroke-width="1.5" />
+                 <rect x="${lastNode.x - 3}" y="${lastNode.y - 3}" width="6" height="6" fill="var(--bg-panel)" stroke="var(--accent-color)" stroke-width="1.5" />
+               `;
+             }
+             
+             // Save temporarily for pointerUp
+             dragUpdatesQueueRef.current[currentPathId] = { 
+               nodes: newNodes, 
+               pathData: generatePathData(newNodes) 
+             };
           }
         }
       }
@@ -408,8 +455,33 @@ export default function Preview() {
     };
 
     const handlePointerUp = () => {
+      if (Object.keys(dragUpdatesQueueRef.current).length > 0) {
+         const updates = Object.keys(dragUpdatesQueueRef.current).map(id => ({ id, updates: dragUpdatesQueueRef.current[id] }));
+         updateLayers(updates, false);
+         Object.keys(dragUpdatesQueueRef.current).forEach(id => {
+            const node = layerNodesRef.current[id];
+            if (node) {
+               node.style.transform = '';
+               node.style.width = '';
+               node.style.height = '';
+               node.style.fontSize = '';
+            }
+         });
+         dragUpdatesQueueRef.current = {};
+      }
+
+      if (isDragging) {
+        setIsDragging(false);
+        setDragStart(null);
+      }
+
       if (isCanvasPanning) setIsCanvasPanning(false);
-      if (isDrawingPath) setIsDrawingPath(false);
+      if (isDrawingPath && activeTool === 'pen_freehand' && currentPathId) {
+        updateLayer(currentPathId, {
+          pathData: freehandPathRef.current
+        });
+        setIsDrawingPath(false);
+      }
       setResizingCanvas(null);
       setSnapLines([]);
       setLayerStartPos({});
@@ -422,6 +494,10 @@ export default function Preview() {
       setIsRotating(false);
       setRotatingLayerId(null);
       setRotateStart(null);
+
+      if (penState === 'dragging') {
+        setPenState('idle');
+      }
 
       setResizingCanvas(null);
       setCanvasResizeHandle(null);
@@ -1275,6 +1351,7 @@ export default function Preview() {
           return (
              <svg width="100%" height="100%" viewBox={`0 0 ${layer.width || 100} ${layer.height || 100}`} style={{ overflow: 'visible', pointerEvents: 'none' }}>
                <path 
+                 ref={(el) => { layerNodesRef.current[`${layer.id}-path`] = el as any; }}
                  d={layer.pathData || 'M 0 0'} 
                  stroke={layer.layerColor || '#000000'} 
                  strokeWidth={layer.strokeWidth || 2} 
@@ -1283,7 +1360,7 @@ export default function Preview() {
                  strokeLinejoin="round"
                />
                {isDrawing && layer.nodes && layer.nodes.map((node: any, i: number) => (
-                 <g key={`node-${i}`}>
+                 <g key={`node-${i}`} ref={(el) => { layerNodesRef.current[`${layer.id}-handles-${i}`] = el as any; }}>
                    {node.handleIn && <line x1={node.x} y1={node.y} x2={node.handleIn.x} y2={node.handleIn.y} stroke="var(--accent-color)" strokeWidth="1" opacity="0.5" />}
                    {node.handleOut && <line x1={node.x} y1={node.y} x2={node.handleOut.x} y2={node.handleOut.y} stroke="var(--accent-color)" strokeWidth="1" opacity="0.5" />}
                    
@@ -1294,12 +1371,13 @@ export default function Preview() {
                  </g>
                ))}
                
-               {isDrawing && penState === 'idle' && layer.nodes && layer.nodes.length > 0 && cursorPos && (
+               {isDrawing && penState === 'idle' && layer.nodes && layer.nodes.length > 0 && (
                  <line 
+                   ref={(el) => { layerNodesRef.current['bezier-preview-line'] = el as any; }}
                    x1={layer.nodes[layer.nodes.length - 1].x} 
                    y1={layer.nodes[layer.nodes.length - 1].y} 
-                   x2={cursorPos.x} 
-                   y2={cursorPos.y} 
+                   x2={layer.nodes[layer.nodes.length - 1].x} 
+                   y2={layer.nodes[layer.nodes.length - 1].y} 
                    stroke="var(--accent-color)" 
                    strokeWidth="1.5" 
                    strokeDasharray="4 4" 
@@ -1315,6 +1393,7 @@ export default function Preview() {
     return (
       <div 
         key={layer.id} 
+        ref={(el) => { layerNodesRef.current[layer.id] = el; }}
         style={baseStyle}
         onPointerDown={(e) => onLayerPointerDown(e, layer)}
       >
@@ -1326,14 +1405,16 @@ export default function Preview() {
   const renderLayerHandles = (layer: any) => {
     return (
       <div key={`handles-${layer.id}`} style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-         <div style={{ 
-           position: 'absolute', 
-           left: layer.x, 
-           top: layer.y, 
-           width: layer.width || 100, 
-           height: layer.height || 50,
-           transform: `rotate(${layer.rotation || 0}deg)`,
-           pointerEvents: 'none'
+         <div 
+           ref={(el) => { layerNodesRef.current[`${layer.id}-handles`] = el; }}
+           style={{ 
+             position: 'absolute', 
+             left: layer.x, 
+             top: layer.y, 
+             width: layer.width || 100, 
+             height: layer.height || 50,
+             transform: `rotate(${layer.rotation || 0}deg)`,
+             pointerEvents: 'none'
          }}>
             {renderResizeHandles(layer)}
          </div>

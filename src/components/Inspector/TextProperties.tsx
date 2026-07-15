@@ -91,64 +91,18 @@ export default function TextProperties({ layer }: { layer: any }) {
         </div>
       </div>
 
+
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>Appearance</h3>
+          <h3 className={styles.sectionTitle}>Color</h3>
         </div>
         <div className={styles.controlGroup}>
-          <CustomSelect 
-            label="Fill Type"
-            value={layer.backgroundType || 'solid'}
-            options={[
-              { value: 'solid', label: 'Solid Color' },
-              { value: 'gradient', label: 'Gradient' }
-            ]}
-            onChange={(val) => handleLayerChange('backgroundType', val)}
+          <ColorPicker
+            color={layer.color || '#000000'}
+            onChange={(color) => handleLayerChange('color', color)}
           />
         </div>
-
-        {(layer.backgroundType || 'solid') === 'solid' ? (
-          <div className={styles.controlGroup} style={{ marginTop: '8px' }}>
-            <label className={styles.label}>Fill Color</label>
-            <ColorPicker
-              color={layer.color || '#000000'}
-              onChange={(color) => handleLayerChange('color', color)}
-            />
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
-            <div className={styles.controlGroup}>
-              <label className={styles.label}>Gradient Angle ({layer.gradient?.angle || 135}deg)</label>
-              <input 
-                type="range" 
-                min="0" max="360"
-                value={layer.gradient?.angle || 135} 
-                onChange={(e) => handleLayerChange('gradient', { ...layer.gradient, angle: Number(e.target.value) })} 
-              />
-            </div>
-            <div className={styles.controlGroup}>
-              <ColorPicker 
-                label="Color 1"
-                color={layer.gradient?.colors?.[0] || '#ff0000'}
-                onChange={(val) => {
-                  const currentColors = layer.gradient?.colors || ['#ff0000', '#0000ff'];
-                  handleLayerChange('gradient', { ...layer.gradient, type: 'linear', colors: [val, currentColors[1]] });
-                }}
-              />
-            </div>
-            <div className={styles.controlGroup}>
-              <ColorPicker 
-                label="Color 2"
-                color={layer.gradient?.colors?.[1] || '#0000ff'}
-                onChange={(val) => {
-                  const currentColors = layer.gradient?.colors || ['#ff0000', '#0000ff'];
-                  handleLayerChange('gradient', { ...layer.gradient, type: 'linear', colors: [currentColors[0], val] });
-                }}
-              />
-            </div>
-          </div>
-        )}
-        <div className={styles.controlGroup}>
+        <div className={styles.controlGroup} style={{ marginTop: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
             <label className={styles.label}>Opacity</label>
             <span className={styles.valueText}>{Math.round((layer.opacity ?? 1) * 100)}%</span>
