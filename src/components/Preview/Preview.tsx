@@ -290,6 +290,11 @@ export default function Preview() {
         }
 
         dragUpdatesQueueRef.current[resizingLayerId] = updates;
+        
+        if (layer?.type === 'chart') {
+           updateLayers([{ id: resizingLayerId, updates }], true);
+           return;
+        }
         const node = layerNodesRef.current[resizingLayerId];
         if (node) {
            node.style.width = `${updates.width}px`;

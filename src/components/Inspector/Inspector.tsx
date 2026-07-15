@@ -136,6 +136,16 @@ export default function Inspector() {
 
   const renderGlobalSettings = () => (
     <div className={styles.section}>
+      <div className={styles.propertyRow} style={{ marginBottom: '16px' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <input 
+            type="checkbox" 
+            checked={globalSettings.autoScaleContent !== false}
+            onChange={(e) => handleGlobalChange('autoScaleContent', e.target.checked)}
+          />
+          <span style={{ fontSize: '13px', fontWeight: 500 }}>Auto-Escalar Contenido al cambiar Tamaño</span>
+        </label>
+      </div>
       
       {globalSettings.isCarousel && (
         <>

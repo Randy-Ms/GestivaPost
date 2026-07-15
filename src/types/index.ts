@@ -138,6 +138,9 @@ export interface GlobalSettings {
   showMargins: boolean;
   showCarouselGuides: boolean;
   
+  // Scaling
+  autoScaleContent?: boolean;
+  
   // Export Settings
   exportFormat: ExportFormat;
   exportQuality: number;

@@ -7,6 +7,7 @@ export const defaultSettings: GlobalSettings = {
   backgroundType: 'solid',
   backgroundColor: '#FFFFFF',
   gradient: { type: 'linear', angle: 135, colors: ['#ff00cc', '#333399'] },
+  autoScaleContent: true,
   noise: 0,
   filters: [],
   padding: 0,
@@ -230,9 +231,34 @@ export const useEditorStore = create<EditorStore>()((set) => {
 
     setGlobalSettings: (settings, overwriteHistory = false) => set((state) => {
       const historyUpdate = overwriteHistory ? {} : saveHistory(state);
+      
+      const willScale = state.globalSettings.autoScaleContent !== false 
+        && ((settings.width !== undefined && settings.width !== state.globalSettings.width) || 
+            (settings.height !== undefined && settings.height !== state.globalSettings.height));
+
+      let newLayers = state.layers;
+      
+      if (willScale) {
+        const newW = settings.width || state.globalSettings.width;
+        const newH = settings.height || state.globalSettings.height;
+        const scaleX = newW / state.globalSettings.width;
+        const scaleY = newH / state.globalSettings.height;
+        const scaleMin = Math.min(scaleX, scaleY);
+
+        newLayers = state.layers.map((l: Layer) => ({
+          ...l,
+          x: l.x * scaleX,
+          y: l.y * scaleY,
+          width: l.width * scaleX,
+          height: l.height * scaleY,
+          fontSize: l.fontSize ? Math.max(8, Math.round(l.fontSize * scaleMin)) : undefined
+        }));
+      }
+
       return {
         ...historyUpdate,
-        globalSettings: { ...state.globalSettings, ...settings }
+        globalSettings: { ...state.globalSettings, ...settings },
+        layers: newLayers
       };
     }),
 
@@ -247,9 +273,30 @@ export const useEditorStore = create<EditorStore>()((set) => {
         case 'reel': w = 1080; h = 1920; break;
         case 'carousel': w = 1080; h = 1080; break;
       }
+      
+      const willScale = state.globalSettings.autoScaleContent !== false && (w !== state.globalSettings.width || h !== state.globalSettings.height);
+      
+      let newLayers = state.layers;
+      
+      if (willScale) {
+        const scaleX = w / state.globalSettings.width;
+        const scaleY = h / state.globalSettings.height;
+        const scaleMin = Math.min(scaleX, scaleY);
+
+        newLayers = state.layers.map((l: Layer) => ({
+          ...l,
+          x: l.x * scaleX,
+          y: l.y * scaleY,
+          width: l.width * scaleX,
+          height: l.height * scaleY,
+          fontSize: l.fontSize ? Math.max(8, Math.round(l.fontSize * scaleMin)) : undefined
+        }));
+      }
+
       return {
         ...saveHistory(state),
-        globalSettings: { ...state.globalSettings, format, width: w, height: h, isCarousel: format === 'carousel' }
+        globalSettings: { ...state.globalSettings, format, width: w, height: h, isCarousel: format === 'carousel' },
+        layers: newLayers
       };
     }),
 
