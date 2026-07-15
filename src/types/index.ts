@@ -89,6 +89,15 @@ export interface Layer {
     showAxes?: boolean;
     showGrid?: boolean;
     dataKey?: string;
+    
+    // Advanced Customization
+    fontFamily?: string;
+    showLegend?: boolean;
+    legendPosition?: 'top' | 'bottom' | 'left' | 'right';
+    cardBackgroundColor?: string;
+    titleColor?: string;
+    subtitleColor?: string;
+    textColor?: string;
   };
   
   // Shape specific

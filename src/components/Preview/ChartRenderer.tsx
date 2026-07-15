@@ -5,7 +5,7 @@ import {
   BarChart, Bar,
   PieChart as RePieChart, Pie, Cell,
   ResponsiveContainer,
-  XAxis, YAxis, Tooltip, CartesianGrid
+  XAxis, YAxis, Tooltip, CartesianGrid, Legend
 } from 'recharts';
 import type { Layer } from '../../types';
 
@@ -26,10 +26,19 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
     gradient = ['#8b5cf6', '#3b82f6'],
     showAxes = true,
     showGrid = true,
+    fontFamily = 'inherit',
+    showLegend = true,
+    legendPosition = 'bottom',
+    cardBackgroundColor = 'var(--bg-panel, #ffffff)',
+    titleColor = 'var(--text-primary, #111827)',
+    subtitleColor = 'var(--text-secondary, #6b7280)',
+    textColor = 'var(--text-secondary, #6b7280)',
   } = layer.chartConfig;
 
   const data = layer.chartData || [];
   const type = layer.chartType || 'line';
+
+  const baseFont = fontFamily === 'inherit' ? 'inherit' : fontFamily;
 
   // KPI Card Type
   if (type === 'kpi') {
@@ -37,20 +46,20 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
       <div style={{
         width: '100%',
         height: '100%',
-        backgroundColor: 'var(--bg-panel, #ffffff)',
+        backgroundColor: cardBackgroundColor,
         borderRadius: `${layer.borderRadius || 16}px`,
         padding: '24px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         boxShadow: layer.showShadow ? '0 10px 25px -5px rgba(0, 0, 0, 0.1)' : 'none',
-        fontFamily: 'inherit'
+        fontFamily: baseFont
       }}>
         <div>
-          <h3 style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary, #6b7280)', fontWeight: 500 }}>
+          <h3 style={{ margin: 0, fontSize: '14px', color: titleColor, fontWeight: 500 }}>
             {title}
           </h3>
-          <p style={{ margin: '8px 0 0', fontSize: '36px', fontWeight: 700, color: 'var(--text-primary, #111827)' }}>
+          <p style={{ margin: '8px 0 0', fontSize: '36px', fontWeight: 700, color: titleColor }}>
             {value}
           </p>
         </div>
@@ -58,7 +67,7 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
           <span style={{ 
             fontSize: '13px', 
             fontWeight: 600,
-            color: changeType === 'positive' ? '#10b981' : changeType === 'negative' ? '#ef4444' : '#6b7280'
+            color: changeType === 'positive' ? '#10b981' : changeType === 'negative' ? '#ef4444' : subtitleColor
           }}>
             {change}
           </span>
@@ -71,12 +80,13 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
   const cardStyle: React.CSSProperties = {
     width: '100%',
     height: '100%',
-    backgroundColor: 'var(--bg-panel, #ffffff)',
+    backgroundColor: cardBackgroundColor,
     borderRadius: `${layer.borderRadius || 16}px`,
     padding: '20px',
     boxShadow: layer.showShadow ? '0 10px 25px -5px rgba(0, 0, 0, 0.1)' : 'none',
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    fontFamily: baseFont
   };
 
   const headerStyle: React.CSSProperties = {
@@ -87,16 +97,29 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
     margin: 0,
     fontSize: '16px',
     fontWeight: 600,
-    color: 'var(--text-primary, #111827)'
+    color: titleColor
   };
 
   const subtitleStyle: React.CSSProperties = {
     margin: '4px 0 0',
     fontSize: '12px',
-    color: 'var(--text-secondary, #6b7280)'
+    color: subtitleColor
   };
 
   const gradId = `colorUv-${layer.id}`;
+  const hasSecondary = data.some(d => d.secondary !== undefined);
+
+  // Recharts Legend positioning logic
+  const getLegendProps = () => {
+    switch(legendPosition) {
+      case 'top': return { align: 'center' as const, verticalAlign: 'top' as const, layout: 'horizontal' as const };
+      case 'bottom': return { align: 'center' as const, verticalAlign: 'bottom' as const, layout: 'horizontal' as const };
+      case 'left': return { align: 'left' as const, verticalAlign: 'middle' as const, layout: 'vertical' as const };
+      case 'right': return { align: 'right' as const, verticalAlign: 'middle' as const, layout: 'vertical' as const };
+      default: return { align: 'center' as const, verticalAlign: 'bottom' as const, layout: 'horizontal' as const };
+    }
+  };
+  const legendProps = getLegendProps();
 
   const renderChart = () => {
     switch (type) {
@@ -110,15 +133,17 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
                   <stop offset="95%" stopColor={color} stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />}
-              {showAxes && <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />}
-              {showAxes && <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />}
+              {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={textColor} strokeOpacity={0.2} />}
+              {showAxes && <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} dy={10} />}
+              {showAxes && <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} />}
               <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', fontFamily: baseFont, color: titleColor, backgroundColor: cardBackgroundColor }}
+                itemStyle={{ color: titleColor }}
               />
-              <Area type="monotone" dataKey="value" stroke={color} strokeWidth={3} fillOpacity={1} fill={`url(#${gradId})`} />
-              {data[0]?.secondary && (
-                <Area type="monotone" dataKey="secondary" stroke="#d1d5db" strokeWidth={3} fillOpacity={0.3} fill="#f3f4f6" />
+              {showLegend && <Legend {...legendProps} wrapperStyle={{ color: textColor, fontSize: 12, paddingTop: legendPosition === 'bottom' ? 10 : 0, paddingBottom: legendPosition === 'top' ? 10 : 0, paddingLeft: legendPosition === 'right' ? 10 : 0, paddingRight: legendPosition === 'left' ? 10 : 0 }} />}
+              <Area type="monotone" dataKey="value" name="Valor" stroke={color} strokeWidth={3} fillOpacity={1} fill={`url(#${gradId})`} />
+              {hasSecondary && (
+                <Area type="monotone" dataKey="secondary" name="Secundario" stroke={textColor} strokeOpacity={0.5} strokeWidth={3} fillOpacity={0.1} fill={textColor} />
               )}
             </AreaChart>
           </ResponsiveContainer>
@@ -128,13 +153,18 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
         return (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />}
-              {showAxes && <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />}
-              {showAxes && <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />}
+              {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={textColor} strokeOpacity={0.2} />}
+              {showAxes && <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} dy={10} />}
+              {showAxes && <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} />}
               <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', fontFamily: baseFont, color: titleColor, backgroundColor: cardBackgroundColor }}
+                itemStyle={{ color: titleColor }}
               />
-              <Line type="monotone" dataKey="value" stroke={color} strokeWidth={3} dot={{ r: 4, fill: color, strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
+              {showLegend && <Legend {...legendProps} wrapperStyle={{ color: textColor, fontSize: 12, paddingTop: legendPosition === 'bottom' ? 10 : 0, paddingBottom: legendPosition === 'top' ? 10 : 0, paddingLeft: legendPosition === 'right' ? 10 : 0, paddingRight: legendPosition === 'left' ? 10 : 0 }} />}
+              <Line type="monotone" dataKey="value" name="Valor" stroke={color} strokeWidth={3} dot={{ r: 4, fill: color, strokeWidth: 2, stroke: cardBackgroundColor }} activeDot={{ r: 6 }} />
+              {hasSecondary && (
+                <Line type="monotone" dataKey="secondary" name="Secundario" stroke={textColor} strokeOpacity={0.5} strokeWidth={3} dot={{ r: 4, fill: textColor, strokeWidth: 2, stroke: cardBackgroundColor }} />
+              )}
             </LineChart>
           </ResponsiveContainer>
         );
@@ -143,24 +173,25 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
         return (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={32}>
-              {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />}
-              {showAxes && <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />}
-              {showAxes && <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />}
+              {showGrid && <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={textColor} strokeOpacity={0.2} />}
+              {showAxes && <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} dy={10} />}
+              {showAxes && <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: textColor }} />}
               <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', fontFamily: baseFont, color: titleColor, backgroundColor: cardBackgroundColor }}
                 cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                itemStyle={{ color: titleColor }}
               />
-              <Bar dataKey="value" fill={color} radius={[6, 6, 6, 6]}>
-                {data.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={index === data.length - 1 ? color : '#e5e7eb'} />
-                ))}
-              </Bar>
+              {showLegend && <Legend {...legendProps} wrapperStyle={{ color: textColor, fontSize: 12, paddingTop: legendPosition === 'bottom' ? 10 : 0, paddingBottom: legendPosition === 'top' ? 10 : 0, paddingLeft: legendPosition === 'right' ? 10 : 0, paddingRight: legendPosition === 'left' ? 10 : 0 }} />}
+              <Bar dataKey="value" name="Valor" fill={color} radius={[6, 6, 6, 6]} />
+              {hasSecondary && (
+                <Bar dataKey="secondary" name="Secundario" fill={textColor} fillOpacity={0.4} radius={[6, 6, 6, 6]} />
+              )}
             </BarChart>
           </ResponsiveContainer>
         );
 
       case 'pie':
-        const COLORS = [color, gradient[0], gradient[1], '#f3f4f6'];
+        const COLORS = [color, gradient[0], gradient[1], textColor];
         return (
           <ResponsiveContainer width="100%" height="100%">
             <RePieChart>
@@ -172,6 +203,7 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
                 outerRadius={80}
                 paddingAngle={5}
                 dataKey="value"
+                nameKey="name"
                 stroke="none"
               >
                 {data.map((_, index) => (
@@ -179,8 +211,10 @@ export default function ChartRenderer({ layer }: ChartRendererProps) {
                 ))}
               </Pie>
               <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', fontFamily: baseFont, color: titleColor, backgroundColor: cardBackgroundColor }}
+                itemStyle={{ color: titleColor }}
               />
+              {showLegend && <Legend {...legendProps} wrapperStyle={{ color: textColor, fontSize: 12, paddingTop: legendPosition === 'bottom' ? 10 : 0, paddingBottom: legendPosition === 'top' ? 10 : 0, paddingLeft: legendPosition === 'right' ? 10 : 0, paddingRight: legendPosition === 'left' ? 10 : 0 }} />}
             </RePieChart>
           </ResponsiveContainer>
         );
