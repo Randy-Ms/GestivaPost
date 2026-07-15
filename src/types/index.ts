@@ -1,6 +1,6 @@
 export type Tool = 'pointer' | 'text' | 'shape' | 'pen_freehand' | 'pen_bezier' | 'image';
 export type ShapeType = 'rectangle' | 'circle' | 'triangle' | 'polygon' | 'line' | 'hexagon' | 'pentagon' | 'cloud' | 'heart';
-export type LayerType = 'text' | 'button' | 'image' | 'shape' | 'path' | 'icon';
+export type LayerType = 'text' | 'button' | 'image' | 'shape' | 'path' | 'icon' | 'chart';
 export type SocialFormat = 'post_square' | 'post_vertical' | 'post_horizontal' | 'story' | 'reel' | 'carousel';
 export type ExportFormat = 'png' | 'jpeg' | 'webp';
 export type BackgroundType = 'solid' | 'gradient';
@@ -47,6 +47,7 @@ export interface Layer {
   noise?: number;
   backgroundType?: BackgroundType;
   gradient?: GradientConfig;
+  showShadow?: boolean;
   
   // Text specific
   text?: string;
@@ -73,6 +74,22 @@ export interface Layer {
   // Image specific
   src?: string;
   backgroundRemoved?: boolean;
+  
+  // Chart specific
+  chartType?: 'line' | 'bar' | 'pie' | 'kpi' | 'area';
+  chartData?: any[];
+  chartConfig?: {
+    title?: string;
+    subtitle?: string;
+    value?: string; // For KPI
+    change?: string; // For KPI
+    changeType?: 'positive' | 'negative' | 'neutral';
+    color?: string;
+    gradient?: string[];
+    showAxes?: boolean;
+    showGrid?: boolean;
+    dataKey?: string;
+  };
   
   // Shape specific
 }

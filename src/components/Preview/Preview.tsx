@@ -1,7 +1,9 @@
 import { useRef, useEffect, useState } from 'react';
 import { Undo, Redo, Maximize, Trash2, Star, Smile, Zap, Camera, Bell, Search, Mail, Phone, MapPin, Settings, User, Heart as HeartIcon, ThumbsUp, MessageCircle, Share2, Bookmark, Home, Globe } from 'lucide-react';
+
 import { useEditorStore } from '../../stores/useEditorStore';
 import ContextMenu from './ContextMenu';
+import ChartRenderer from './ChartRenderer';
 import styles from './Preview.module.css';
 
 
@@ -1398,6 +1400,8 @@ export default function Preview() {
              </svg>
           );
         }
+        case 'chart':
+          return <ChartRenderer layer={layer} />;
         default: return null;
       }
     };

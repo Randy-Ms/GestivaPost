@@ -42,6 +42,7 @@ interface EditorStoreState extends EditorSnapshot {
   activeTool: Tool;
   selectedShapeType: ShapeType;
   showMockup: boolean;
+  showDashboardCreator: boolean;
   clipboard: Layer[];
 }
 
@@ -49,6 +50,7 @@ interface EditorStoreActions {
   setIsExporting: (isExporting: boolean) => void;
   setShowResetConfirm: (show: boolean) => void;
   setShowMockup: (show: boolean) => void;
+  setShowDashboardCreator: (show: boolean) => void;
   setActiveTool: (tool: Tool) => void;
   setSelectedShapeType: (shapeType: ShapeType) => void;
   saveSnapshot: () => void;
@@ -98,11 +100,13 @@ export const useEditorStore = create<EditorStore>()((set) => {
     activeTool: 'pointer',
     selectedShapeType: 'rectangle',
     showMockup: typeof window !== 'undefined' && window.innerWidth > 768,
+    showDashboardCreator: false,
     clipboard: [],
     
     setIsExporting: (isExporting) => set({ isExporting }),
     setShowResetConfirm: (showResetConfirm) => set({ showResetConfirm }),
     setShowMockup: (showMockup) => set({ showMockup }),
+    setShowDashboardCreator: (showDashboardCreator) => set({ showDashboardCreator }),
     setActiveTool: (activeTool) => set({ activeTool }),
     setSelectedShapeType: (selectedShapeType) => set({ selectedShapeType }),
     

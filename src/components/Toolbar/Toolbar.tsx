@@ -11,15 +11,17 @@ import {
   Pen,
   Smile,
   Image as ImageIcon,
-  Smartphone
+  Smartphone,
+  BarChart2
 } from 'lucide-react';
 import { useEditorStore } from '../../stores/useEditorStore';
 import type { ShapeType } from '../../types';
 import LibraryModal from '../UI/LibraryModal';
+import DashboardCreatorModal from '../UI/DashboardCreatorModal';
 import styles from './Toolbar.module.css';
 
 export default function Toolbar() {
-  const { activeTool, setActiveTool, selectedShapeType, addLayer, showMockup, setShowMockup } = useEditorStore();
+  const { activeTool, setActiveTool, selectedShapeType, addLayer, showMockup, setShowMockup, setShowDashboardCreator } = useEditorStore();
   const [showLibrary, setShowLibrary] = useState(false);
   const [libraryTab, setLibraryTab] = useState<'shapes'|'icons'>('shapes');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,6 +152,16 @@ export default function Toolbar() {
         <Smartphone size={20} />
       </button>
 
+      <div className={styles.divider} />
+
+      <button 
+        className={styles.toolButton}
+        onClick={() => setShowDashboardCreator(true)}
+        title="Crear Dashboard / Gráficas"
+      >
+        <BarChart2 size={20} />
+      </button>
+
       <input 
         type="file" 
         ref={fileInputRef} 
@@ -159,6 +171,7 @@ export default function Toolbar() {
       />
 
       <LibraryModal isOpen={showLibrary} onClose={() => setShowLibrary(false)} initialTab={libraryTab} />
+      <DashboardCreatorModal />
     </div>
   );
 }
