@@ -5,7 +5,8 @@ export function useKeyboardShortcuts() {
   const { 
     undo, redo, deleteLayer, duplicateLayer, selectedLayerIds, 
     selectLayer, showResetConfirm, setShowResetConfirm, layers,
-    setActiveTool, showMockup, setShowMockup, copySelectedLayers, pasteLayers
+    setActiveTool, showMockup, setShowMockup, copySelectedLayers, pasteLayers,
+    showDashboardCreator, setShowDashboardCreator
   } = useEditorStore();
 
   useEffect(() => {
@@ -68,7 +69,11 @@ export function useKeyboardShortcuts() {
         case 'D':
           if (cmdOrCtrl) {
             e.preventDefault();
-            selectedLayerIds.forEach(id => duplicateLayer(id));
+            if (e.shiftKey) {
+              setShowDashboardCreator(!showDashboardCreator);
+            } else {
+              selectedLayerIds.forEach(id => duplicateLayer(id));
+            }
           }
           break;
 
@@ -108,5 +113,5 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, deleteLayer, duplicateLayer, selectedLayerIds, selectLayer, showResetConfirm, setShowResetConfirm, layers, showMockup, setShowMockup, copySelectedLayers, pasteLayers]);
+  }, [undo, redo, deleteLayer, duplicateLayer, selectedLayerIds, selectLayer, showResetConfirm, setShowResetConfirm, layers, showMockup, setShowMockup, copySelectedLayers, pasteLayers, showDashboardCreator, setShowDashboardCreator]);
 }
